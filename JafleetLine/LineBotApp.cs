@@ -1,5 +1,6 @@
 using jafleetline.EF;
 using jafleetline.Logics;
+using JafleetLine.EF;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using System;
@@ -36,6 +37,14 @@ namespace jafleetline
             {
                 infologger.Info($"LINE：{reg},{userId}");
             }
+            Log log = new Log
+            {
+                LogDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                ,LogType = "3"
+                ,LogDetail = reg
+                ,UserId = userId
+            };
+
             if (!reg.StartsWith("JA"))
             {
                 reg = "JA" + reg;
@@ -47,6 +56,8 @@ namespace jafleetline
             AircraftView av = null;
             using (var context = new jafleetContext())
             {
+                context.Log.Add(log);
+                context.SaveChanges();
                 av = context.AircraftView.Where(p => p.RegistrationNumber == reg).FirstOrDefault();
             }
 

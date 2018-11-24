@@ -1,4 +1,5 @@
 ﻿using System;
+using JafleetLine.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace jafleetline.EF
         }
 
         public virtual DbSet<AircraftView> AircraftView { get; set; }
+        public virtual DbSet<Log> Log { get; set; }
 
         public static readonly LoggerFactory MyLoggerFactory
             = new LoggerFactory(new[]
@@ -38,6 +40,25 @@ namespace jafleetline.EF
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Log>(entity =>
+            {
+                entity.HasKey(e => e.LogId);
+
+                entity.ToTable("log");
+
+                entity.Property(e => e.LogId)
+                .HasColumnName("LOG_ID")
+                .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.LogDate).HasColumnName("LOG_DATE");
+
+                entity.Property(e => e.LogType).HasColumnName("LOG_TYPE");
+
+                entity.Property(e => e.LogDetail).HasColumnName("LOG_DETAIL");
+
+                entity.Property(e => e.UserId).HasColumnName("USER_ID");
+            });
+
             modelBuilder.Entity<AircraftView>(entity =>
             {
                 entity.HasKey(e => e.RegistrationNumber);
