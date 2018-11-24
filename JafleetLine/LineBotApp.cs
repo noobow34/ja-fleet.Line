@@ -32,7 +32,7 @@ namespace jafleetline
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.ToUpper();
-            infologger.Info("LINEF" + reg);
+            infologger.Info("LINEï¼š" + reg);
             if (!reg.StartsWith("JA"))
             {
                 reg = "JA" + reg;
@@ -50,13 +50,13 @@ namespace jafleetline
             if(av != null)
             {
                 string aircraftInfo = $"{av.RegistrationNumber} \n " +
-                    $" q‹ó‰ïĞ:{av.AirlineNameJpShort} \n " +
-                    $" Œ^®:{av.TypeDetailName ?? av.TypeName} \n " +
-                    $" »‘¢”Ô†:{av.SerialNumber} \n " +
-                    $" “o˜^”NŒ“ú:{av.RegisterDate} \n " +
-                    $" ‰^—pó‹µ:{av.Operation} \n " +
+                    $" èˆªç©ºä¼šç¤¾:{av.AirlineNameJpShort} \n " +
+                    $" å‹å¼:{av.TypeDetailName ?? av.TypeName} \n " +
+                    $" è£½é€ ç•ªå·:{av.SerialNumber} \n " +
+                    $" ç™»éŒ²å¹´æœˆæ—¥:{av.RegisterDate} \n " +
+                    $" é‹ç”¨çŠ¶æ³:{av.Operation} \n " +
                     $" WiFi:{av.Wifi} \n " +
-                    $" ”õl:{av.Remarks}";
+                    $" å‚™è€ƒ:{av.Remarks}";
 
                 replyMessage1 = new TextMessage(aircraftInfo);
                 (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(reg);
@@ -68,7 +68,7 @@ namespace jafleetline
             }
             else
             {
-                replyMessage1 = new TextMessage("Œ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½B");
+                replyMessage1 = new TextMessage("è¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚");
             }
 
 
