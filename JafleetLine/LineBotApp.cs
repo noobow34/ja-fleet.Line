@@ -2,6 +2,7 @@ using jafleetline.EF;
 using jafleetline.Logics;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace jafleetline
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.ToUpper();
+            Console.WriteLine(reg);
 
             if (!reg.StartsWith("JA"))
             {
