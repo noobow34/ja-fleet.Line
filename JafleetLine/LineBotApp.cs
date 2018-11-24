@@ -12,6 +12,7 @@ namespace jafleetline
     internal class LineBotApp : WebhookApplication
     {
         private LineMessagingClient messagingClient { get; }
+        private static NLog.Logger infologger = NLog.LogManager.GetLogger("infologger");
 
         public LineBotApp(LineMessagingClient lineMessagingClient)
         {
@@ -31,7 +32,7 @@ namespace jafleetline
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.ToUpper();
-
+            infologger.Info("LINEÅF" + reg);
             if (!reg.StartsWith("JA"))
             {
                 reg = "JA" + reg;
