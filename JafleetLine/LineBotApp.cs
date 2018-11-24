@@ -71,7 +71,11 @@ namespace jafleetline
             }
             else
             {
-                replyMessage1 = new TextMessage("見つかりませんでした。\n----\n検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m");
+                replyMessage1 = new TextMessage("見つかりませんでした。\n" +
+                    "----\n" +
+                    "検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m" +
+                    "----\n" +
+                    "検索方法：○→JA801A・ja801a・801a・801A、×→B787（機種名）・N115AN（海外の機体）");
             }
 
 
