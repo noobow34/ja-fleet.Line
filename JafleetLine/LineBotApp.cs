@@ -1,6 +1,9 @@
+using jafleetline.EF;
+using jafleetline.Logics;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NoobowNotifier
@@ -26,9 +29,18 @@ namespace NoobowNotifier
 
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
-            var message = userMessage.Split(" ");
+            string reg = userMessage.ToUpper();
             ISendMessage replyMessage1 = null;
             ISendMessage replyMessage2 = null;
+
+            AircraftView av = null;
+            using (var context = new jafleetContext())
+            {
+                av = context.AircraftView.Where(p => p.RegistrationNumber == reg).FirstOrDefault();
+            }
+
+            (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(reg);
+            replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
 
             await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1,replyMessage2 });
         }
