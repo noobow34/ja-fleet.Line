@@ -1,6 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace NoobowNotifier.Models
+namespace jafleetline.Models
 {
     public class EventSourceLocation : EventSourceState
     {

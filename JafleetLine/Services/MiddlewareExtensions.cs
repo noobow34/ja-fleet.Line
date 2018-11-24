@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace NoobowNotifier.Middleware
+namespace jafleetline.Middleware
 {
     public static class MiddlewareExtensions
     {

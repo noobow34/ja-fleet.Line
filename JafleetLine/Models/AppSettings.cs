@@ -1,4 +1,4 @@
-namespace NoobowNotifier.Models
+namespace jafleetline.Models
 {
     public class AppSettings
     {

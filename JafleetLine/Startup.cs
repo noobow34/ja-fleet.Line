@@ -1,18 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using jafleetline.Middleware;
+using jafleetline.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using NoobowNotifier.Models;
-using NoobowNotifier.Middleware;
-using Microsoft.AspNetCore.Http.Internal;
 
-namespace NoobowNotifier
+namespace jafleetline
 {
     public class Startup
     {

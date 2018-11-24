@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NoobowNotifier.Middleware
+namespace jafleetline.Middleware
 {
     /// <summary>
     /// Verify if the request is valid, then returns LINE Webhook events from the request.
