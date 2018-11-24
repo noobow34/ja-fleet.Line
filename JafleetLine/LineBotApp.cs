@@ -32,7 +32,10 @@ namespace jafleetline
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.ToUpper();
-            infologger.Info("LINE：" + reg);
+            if(userId != "U68e05e69b6acbaaf565bc616fdef695d")
+            {
+                infologger.Info($"LINE：{reg},{userId}");
+            }
             if (!reg.StartsWith("JA"))
             {
                 reg = "JA" + reg;
@@ -68,7 +71,7 @@ namespace jafleetline
             }
             else
             {
-                replyMessage1 = new TextMessage("見つかりませんでした。");
+                replyMessage1 = new TextMessage("見つかりませんでした。\n検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m");
             }
 
 
