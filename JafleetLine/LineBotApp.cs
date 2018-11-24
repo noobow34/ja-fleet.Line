@@ -71,7 +71,7 @@ namespace jafleetline
             }
             else
             {
-                replyMessage1 = new TextMessage("見つかりませんでした。\n検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m");
+                replyMessage1 = new TextMessage("見つかりませんでした。\n----\n検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m");
             }
 
 
