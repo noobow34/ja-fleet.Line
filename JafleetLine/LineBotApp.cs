@@ -30,6 +30,12 @@ namespace jafleetline
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.ToUpper();
+
+            if (!reg.StartsWith("JA"))
+            {
+                reg = "JA" + reg;
+            }
+
             ISendMessage replyMessage1 = null;
             ISendMessage replyMessage2 = null;
 
@@ -39,10 +45,39 @@ namespace jafleetline
                 av = context.AircraftView.Where(p => p.RegistrationNumber == reg).FirstOrDefault();
             }
 
-            (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(reg);
-            replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
+            if(av != null)
+            {
+                string aircraftInfo = $"{av.RegistrationNumber}\n" +
+                    $"航空会社：{av.AirlineNameJpShort}\n" +
+                    $"型式：{av.TypeDetailName ?? av.TypeName}\n" +
+                    $"製造番号：{av.SerialNumber}\n" +
+                    $"登録年月日：{av.RegisterDate}\n" +
+                    $"運用状況：{av.Operation}\n" +
+                    $"WiFi：{av.Wifi}\n" +
+                    $"備考：{av.Remarks}";
 
-            await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1,replyMessage2 });
+                replyMessage1 = new TextMessage(aircraftInfo);
+                (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(reg);
+                if (!string.IsNullOrEmpty(photosmall))
+                {
+                    replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
+                }
+
+            }
+            else
+            {
+                replyMessage1 = new TextMessage("見つかりませんでした。");
+            }
+
+
+            if (replyMessage2 != null)
+            {
+                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1, replyMessage2 });
+            }
+            else
+            {
+                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1});
+            }
         }
 
         private string GetFileExtension(string mediaType)
