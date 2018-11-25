@@ -1,6 +1,5 @@
-using jafleetline.EF;
+using jafleet.EF;
 using jafleetline.Logics;
-using JafleetLine.EF;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using System;

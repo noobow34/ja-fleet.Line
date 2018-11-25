@@ -37,7 +37,7 @@ namespace jafleetline.Logics
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
