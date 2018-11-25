@@ -1,3 +1,5 @@
+using jafleet.Commons.Constants;
+using jafleet.Constants;
 using jafleet.EF;
 using jafleetline.Logics;
 using Line.Messaging;
@@ -5,6 +7,7 @@ using Line.Messaging.Webhooks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace jafleetline
@@ -38,8 +41,8 @@ namespace jafleetline
             }
             Log log = new Log
             {
-                LogDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                ,LogType = "3"
+                LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
+                ,LogType = LogType.LINE
                 ,LogDetail = reg
                 ,UserId = userId
             };
