@@ -31,10 +31,10 @@ namespace jafleetline
 
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
-            string reg = userMessage.ToUpper();
+            string reg = userMessage.Split("\n")?[0].ToUpper();
             if(userId != "U68e05e69b6acbaaf565bc616fdef695d")
             {
-                infologger.Info($"LINE：{reg},{userId}");
+                infologger.Info($"LINE：{userMessage},{userId}");
             }
             Log log = new Log
             {
@@ -85,7 +85,10 @@ namespace jafleetline
                     "----\n" +
                     "検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m\n" +
                     "----\n" +
-                    "検索方法：○→JA801A・ja801a・801a・801A、×→B787（機種名）・N115AN（海外の機体）");
+                    "【検索方法】\n" +
+                    "メッセージの1行目のみ検索対象になります。" +
+                    "OK→JA801A・ja801a・801a・801A（JAはなくてもOK、大文字小文字区別せず）\n" +
+                    "NG→B787・N115AN（型式名や海外の機体は検索できない）");
             }
 
 
