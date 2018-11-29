@@ -1,4 +1,3 @@
-using jafleet.Commons.Constants;
 using jafleet.Constants;
 using jafleet.EF;
 using jafleetline.Logics;
@@ -7,7 +6,6 @@ using Line.Messaging.Webhooks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace jafleetline
@@ -15,7 +13,6 @@ namespace jafleetline
     internal class LineBotApp : WebhookApplication
     {
         private LineMessagingClient messagingClient { get; }
-        private static NLog.Logger infologger = NLog.LogManager.GetLogger("infologger");
 
         public LineBotApp(LineMessagingClient lineMessagingClient)
         {
@@ -35,10 +32,7 @@ namespace jafleetline
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.Split("\n")?[0].ToUpper();
-            if(userId != "U68e05e69b6acbaaf565bc616fdef695d")
-            {
-                infologger.Info($"LINE：{userMessage},{userId}");
-            }
+
             Log log = new Log
             {
                 LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
