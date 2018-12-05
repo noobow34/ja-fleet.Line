@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace jafleetline.Logics
+namespace jafleet.Line.Logics
 {
     public class JPLogics
     {

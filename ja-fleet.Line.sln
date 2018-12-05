@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2048
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JafleetLine", "JafleetLine\JafleetLine.csproj", "{76663770-05F7-4645-9271-79DF3819F3CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ja-fleet.Line", "ja-fleet.Line\ja-fleet.Line.csproj", "{76663770-05F7-4645-9271-79DF3819F3CC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ja-fleet.Commons", "..\ja-fleet.Commons\ja-fleet.Commons\ja-fleet.Commons.csproj", "{86AB0276-BCDE-4097-800E-32D0F936D759}"
 EndProject

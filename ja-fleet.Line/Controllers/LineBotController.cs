@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
-using jafleetline.Models;
+using jafleet.Line.Models;
 
-namespace jafleetline.Controllers
+namespace jafleet.Line.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]

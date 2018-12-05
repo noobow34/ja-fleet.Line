@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace jafleetline.Middleware
+namespace jafleet.Line.Middleware
 {
     public static class MiddlewareExtensions
     {

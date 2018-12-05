@@ -1,6 +1,6 @@
 using jafleet.Constants;
 using jafleet.EF;
-using jafleetline.Logics;
+using jafleet.Line.Logics;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using System;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace jafleetline
+namespace jafleet.Line
 {
     internal class LineBotApp : WebhookApplication
     {

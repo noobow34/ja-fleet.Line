@@ -1,6 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace jafleetline.Models
+namespace jafleet.Line.Models
 {
     public class EventSourceLocation : EventSourceState
     {

@@ -1,11 +1,11 @@
-using jafleetline.Middleware;
-using jafleetline.Models;
+using jafleet.Line.Middleware;
+using jafleet.Line.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace jafleetline
+namespace jafleet.Line
 {
     public class Startup
     {
