@@ -6,6 +6,7 @@ using Line.Messaging.Webhooks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace jafleet.Line
@@ -33,14 +34,6 @@ namespace jafleet.Line
         {
             string reg = userMessage.Split("\n")?[0].ToUpper();
 
-            Log log = new Log
-            {
-                LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
-                ,LogType = LogType.LINE
-                ,LogDetail = reg
-                ,UserId = userId
-            };
-
             if (!reg.StartsWith("JA"))
             {
                 reg = "JA" + reg;
@@ -52,8 +45,6 @@ namespace jafleet.Line
             AircraftView av = null;
             using (var context = new jafleetContext())
             {
-                context.Log.Add(log);
-                context.SaveChanges();
                 av = context.AircraftView.Where(p => p.RegistrationNumber == reg).FirstOrDefault();
             }
 
@@ -97,6 +88,45 @@ namespace jafleet.Line
             {
                 await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1});
             }
+
+            Log log = new Log
+            {
+                LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
+                ,LogType = LogType.LINE
+                ,LogDetail = reg
+                ,UserId = userId
+            };
+
+            var profile = await messagingClient.GetUserProfileAsync(userId);
+            var httpClient = new HttpClient();
+            var profileImage = await httpClient.GetByteArrayAsync(profile.PictureUrl);
+            LineUser user = new LineUser
+            {
+                UserId = userId
+                ,
+                UserName = profile.DisplayName
+                ,
+                ProfileImage = profileImage
+                ,
+                LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
+            };
+            using (var context = new jafleetContext())
+            {
+                context.Log.Add(log);
+
+                //LineUser登録または更新
+                if(context.LineUser.Where(p => p.UserId == userId).Count() != 0)
+                {
+                    context.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                }
+                else
+                {
+                    context.LineUser.Add(user);
+                }
+
+                context.SaveChanges();
+            }
+
         }
 
         private string GetFileExtension(string mediaType)
