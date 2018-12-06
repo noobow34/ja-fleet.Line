@@ -94,7 +94,7 @@ namespace jafleet.Line
             {
                 LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME),
                 LogType = LogType.LINE,
-                LogDetail = reg,
+                LogDetail = originalReg,
                 UserId = userId
             };
 
