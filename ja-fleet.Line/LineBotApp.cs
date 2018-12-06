@@ -33,6 +33,7 @@ namespace jafleet.Line
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string reg = userMessage.Split("\n")?[0].ToUpper();
+            string originalReg = userMessage.Split("\n")?[0];
 
             if (!reg.StartsWith("JA"))
             {
@@ -91,10 +92,10 @@ namespace jafleet.Line
 
             Log log = new Log
             {
-                LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
-                ,LogType = LogType.LINE
-                ,LogDetail = reg
-                ,UserId = userId
+                LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME),
+                LogType = LogType.LINE,
+                LogDetail = reg,
+                UserId = userId
             };
 
             var profile = await messagingClient.GetUserProfileAsync(userId);
@@ -102,16 +103,14 @@ namespace jafleet.Line
             var profileImage = await httpClient.GetByteArrayAsync(profile.PictureUrl);
             LineUser user = new LineUser
             {
-                UserId = userId
-                ,
-                UserName = profile.DisplayName
-                ,
-                ProfileImage = profileImage
-                ,
+                UserId = userId,
+                UserName = profile.DisplayName,
+                ProfileImage = profileImage,
                 LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
             };
             using (var context = new jafleetContext())
             {
+                //Log登録
                 context.Log.Add(log);
 
                 //LineUser登録または更新
