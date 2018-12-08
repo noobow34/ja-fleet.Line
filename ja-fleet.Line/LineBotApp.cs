@@ -102,12 +102,12 @@ namespace jafleet.Line
                 }
                 else
                 {
-                    replyMessage1 = new TextMessage("JA-Fleetにデータが登録されておらず、写真のみの検索でも見つかりませんでした。" +
-                        "JA-Fleet登録データ：JAレジで運航中のもの、2018/09以降に抹消されてもの" +
+                    replyMessage1 = new TextMessage("JA-Fleetにデータが登録されておらず、写真のみの検索でも見つかりませんでした。\n" +
+                        "JA-Fleet登録データ：JAレジで運航中のもの、2018/09以降に抹消されてもの\n" +
                         "写真のみ検索：Jetphotosサイトに登録されているもの" +
-                        "【検索例】" +
-                        "JAレジ：801a,JA301J（JAレジは、'JA'をつけなくてもOK）" +
-                        "それ以外：80-1111,n501dn, A6-BLA（省略不可）" +
+                        "【検索例】\n" +
+                        "JAレジ：801a,JA301J（JAレジは、'JA'をつけなくてもOK）\n" +
+                        "それ以外：80-1111,n501dn, A6-BLA（省略不可）\n" +
                         "※すべて大文字小文字区別せず");
                 }
             }
