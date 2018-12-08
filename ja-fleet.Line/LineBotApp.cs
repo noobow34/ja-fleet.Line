@@ -32,12 +32,13 @@ namespace jafleet.Line
 
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
-            string reg = userMessage.Split("\n")?[0].ToUpper();
+            string upperedReg = userMessage.Split("\n")?[0].ToUpper();
+            string jaAddUpperedReg = upperedReg;
             string originalReg = userMessage.Split("\n")?[0];
 
-            if (!reg.StartsWith("JA"))
+            if (!upperedReg.StartsWith("JA"))
             {
-                reg = "JA" + reg;
+                jaAddUpperedReg = "JA" + upperedReg;
             }
 
             ISendMessage replyMessage1 = null;
@@ -46,11 +47,12 @@ namespace jafleet.Line
             AircraftView av = null;
             using (var context = new jafleetContext())
             {
-                av = context.AircraftView.Where(p => p.RegistrationNumber == reg).FirstOrDefault();
+                av = context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
             }
 
             if(av != null)
             {
+                //JA-Fleetのデータベースで見つかった場合
                 string aircraftInfo = $"{av.RegistrationNumber} \n " +
                     $" 航空会社:{av.AirlineNameJpShort} \n " +
                     $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
@@ -61,7 +63,7 @@ namespace jafleet.Line
                     $" 備考:{av.Remarks}";
 
                 replyMessage1 = new TextMessage(aircraftInfo);
-                (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(reg);
+                (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
                 if (!string.IsNullOrEmpty(photosmall))
                 {
                     replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
@@ -70,14 +72,44 @@ namespace jafleet.Line
             }
             else
             {
-                replyMessage1 = new TextMessage("見つかりませんでした。\n" +
-                    "----\n" +
-                    "検索できるのはJA-Fleetサイトと同じ範囲であり、2018/09以前に抹消された機体や海外の機体は検索できませんm(_ _)m\n" +
-                    "----\n" +
-                    "【検索方法】\n" +
-                    "メッセージの1行目のみ検索対象になります。" +
-                    "OK→JA801A・ja801a・801a・801A（JAはなくてもOK、大文字小文字区別せず）\n" +
-                    "NG→B787・N115AN（型式名や海外の機体は検索できない）");
+                //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
+
+                //まずはそのまま検索
+                string photolarge;
+                string photosmall;
+                bool found = false;
+                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
+                if (!string.IsNullOrEmpty(photosmall))
+                {
+                    //そのまま検索で見つかった
+                    found = true;
+                }
+                else
+                {
+                    //見つからなければJA付きで検索
+                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                    if (!string.IsNullOrEmpty(photosmall))
+                    {
+                        //JA付きの検索で見つかった
+                        found = true;
+                    }
+                }
+
+                if (found)
+                {
+                    replyMessage1 = new TextMessage("JA-Fleetにデータが登録されていないため、写真のみ検索しました。");
+                    replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
+                }
+                else
+                {
+                    replyMessage1 = new TextMessage("JA-Fleetにデータが登録されておらず、写真のみの検索でも見つかりませんでした。" +
+                        "JA-Fleet登録データ：JAレジで運航中のもの、2018/09以降に抹消されてもの" +
+                        "写真のみ検索：Jetphotosサイトに登録されているもの" +
+                        "【検索例】" +
+                        "JAレジ：801a,JA301J（JAレジは、'JA'をつけなくてもOK）" +
+                        "それ以外：80-1111,n501dn, A6-BLA（省略不可）" +
+                        "※すべて大文字小文字区別せず");
+                }
             }
 
 
