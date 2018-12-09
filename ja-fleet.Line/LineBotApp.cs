@@ -94,28 +94,44 @@ namespace jafleet.Line
         /// <returns></returns>
         protected override async Task OnUnfollowAsync(UnfollowEvent ev)
         {
-            string unfollowDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
-            string userId = ev.Source.UserId;
+            Task task = Task.Run(() =>
+            {
+                string unfollowDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
+                string userId = ev.Source.UserId;
 
-            Log log = new Log
-            {
-                LogDate = unfollowDate,
-                LogType = LogType.LINE_UNFOLLOW,
-                LogDetail = userId,
-                UserId = userId
-            };
-            //LINE_USERにユーザーを記録
-            using (var context = new jafleetContext())
-            {
-                var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
-                if (lineuser != null)
+                //LINE_USERにユーザーを記録
+                using (var context = new jafleetContext())
                 {
-                    //ユーザーがLINE_USERテーブルに存在する場合のみ処理
-                    lineuser.UnfollowDate = unfollowDate;
+                    var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                    if (lineuser != null)
+                    {
+                        //ユーザーがLINE_USERテーブルに存在する場合
+                        lineuser.UnfollowDate = unfollowDate;
+                    }
+                    else
+                    {
+                        //ユーザーがLINE_USERテーブルに存在しない場合（初期のユーザーなど）
+                        var unfollowedUser = new LineUser
+                        {
+                            UserId = userId,
+                            UnfollowDate = unfollowDate
+                        };
+                    }
+
+                    Log log = new Log
+                    {
+                        LogDate = unfollowDate,
+                        LogType = LogType.LINE_UNFOLLOW,
+                        LogDetail = (lineuser?.UserName) ?? userId,
+                        UserId = userId
+                    };
+
+                    context.Log.Add(log);
+                    context.SaveChanges();
                 }
-                context.Log.Add(log);
-                context.SaveChanges();
-            }
+            });
+
+            await task;
         }
 
         /// <summary>
