@@ -71,10 +71,13 @@ namespace jafleet.Line
                     LineUser user = new LineUser
                     {
                         UserId = userId,
-                        UserName = profile.DisplayName,
-                        ProfileImage = profileImage,
+                        UserName = profile?.DisplayName,
                         FollowDate = followDate
                     };
+                    if(profileImage != null)
+                    {
+                        user.ProfileImage = profileImage;
+                    }
                     context.LineUser.Add(user);
                 }
                 context.Log.Add(log);
@@ -245,13 +248,6 @@ namespace jafleet.Line
 
             //ユーザー情報を取得
             (var profile, var profileImage) = await GetUserProfileAsync(userId);
-            LineUser user = new LineUser
-            {
-                UserId = userId,
-                UserName = profile.DisplayName,
-                ProfileImage = profileImage,
-                LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
-            };
 
             using (var context = new jafleetContext())
             {
@@ -259,12 +255,22 @@ namespace jafleet.Line
                 context.Log.Add(log);
 
                 //LineUser登録または更新
-                if(context.LineUser.Where(p => p.UserId == userId).Count() != 0)
+                var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                if(lineuser != null)
                 {
-                    context.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    lineuser.UserName = profile?.DisplayName;
+                    lineuser.ProfileImage = profileImage;
+                    lineuser.LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
                 }
                 else
                 {
+                    LineUser user = new LineUser
+                    {
+                        UserId = userId,
+                        UserName = profile.DisplayName,
+                        ProfileImage = profileImage,
+                        LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
+                    };
                     context.LineUser.Add(user);
                 }
 
@@ -284,7 +290,7 @@ namespace jafleet.Line
             byte[] retprofileimage = null;
 
             retprofile = await messagingClient.GetUserProfileAsync(userId);
-            if(retprofile.PictureUrl != null)
+            if(retprofile?.PictureUrl != null)
             {
                 var httpClient = new HttpClient();
                 retprofileimage = await httpClient.GetByteArrayAsync(retprofile.PictureUrl);
