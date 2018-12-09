@@ -20,6 +20,31 @@ namespace jafleet.Line
             this.messagingClient = lineMessagingClient;
         }
 
+        //フォローされた
+        protected override async Task OnFollowAsync(FollowEvent ev)
+        {
+            var replyMessage1 = new TextMessage("フォローありがとうございます。\n" +
+                                                "このアカウントのでは使用方法は以下の画像および説明をご確認ください。\n" +
+                                                "・JA-Fleetサイトに登録されている飛行機は詳細情報と写真を検索できます\n" +
+                                                "・JA-Fleetサイトに登録されていない場合は写真のみ検索できます\n" +
+                                                "【検索例】\n" +
+                                                "●JAレジ\n" +
+                                                "801a,JA301J\n" +
+                                                "（JAレジは、'JA'をつけなくてもOK）\n" +
+                                                "●それ以外\n" +
+                                                "80-1111,n501dn, A6-BLA\n" +
+                                                "（省略不可）\n" +
+                                                "※すべて大文字小文字区別せず");
+            var replyMessage2 = new ImageMessage("https://line.ja-fleet.noobow.me/howtouse.jpg", "https://line.ja-fleet.noobow.me/howtouse.jpg");
+
+            await messagingClient.ReplyMessageAsync(ev.ReplyToken, new List<ISendMessage> { replyMessage1,replyMessage2 });
+        }
+
+        /// <summary>
+        /// メッセージ発生
+        /// </summary>
+        /// <param name="ev"></param>
+        /// <returns></returns>
         protected override async Task OnMessageAsync(MessageEvent ev)
         {
             switch (ev.Message.Type)
@@ -30,6 +55,13 @@ namespace jafleet.Line
             }
         }
 
+        /// <summary>
+        /// テキストメッセージ処理
+        /// </summary>
+        /// <param name="replyToken"></param>
+        /// <param name="userMessage"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
             string upperedReg = userMessage.Split("\n")?[0].ToUpper();
@@ -127,6 +159,7 @@ namespace jafleet.Line
                 await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1});
             }
 
+            //ユーザーに返信してからログを処理
             Log log = new Log
             {
                 LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME),
@@ -135,6 +168,7 @@ namespace jafleet.Line
                 UserId = userId
             };
 
+            //ユーザー情報を取得
             var profile = await messagingClient.GetUserProfileAsync(userId);
             var httpClient = new HttpClient();
             var profileImage = await httpClient.GetByteArrayAsync(profile.PictureUrl);
@@ -145,6 +179,7 @@ namespace jafleet.Line
                 ProfileImage = profileImage,
                 LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
             };
+
             using (var context = new jafleetContext())
             {
                 //Log登録
