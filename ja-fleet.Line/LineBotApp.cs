@@ -20,7 +20,12 @@ namespace jafleet.Line
             this.messagingClient = lineMessagingClient;
         }
 
-        //フォローされた
+        /// <summary>
+        /// フォローイベント
+        /// （使用方法を返信して、ユーザー情報とイベントログを記録）
+        /// </summary>
+        /// <param name="ev"></param>
+        /// <returns></returns>
         protected override async Task OnFollowAsync(FollowEvent ev)
         {
             var replyMessage1 = new TextMessage("フォローありがとうございます。\n" +
@@ -38,6 +43,76 @@ namespace jafleet.Line
             var replyMessage2 = new ImageMessage("https://line.ja-fleet.noobow.me/howtouse.jpg", "https://line.ja-fleet.noobow.me/howtouse.jpg");
 
             await messagingClient.ReplyMessageAsync(ev.ReplyToken, new List<ISendMessage> { replyMessage1,replyMessage2 });
+
+            //ユーザーに返信してからログを処理
+            string followDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
+            string userId = ev.Source.UserId;
+
+            (var profile, var profileImage) = await GetUserProfileAsync(userId);
+            Log log = new Log
+            {
+                LogDate = followDate,
+                LogType = LogType.LINE_FOLLOW,
+                LogDetail = profile?.DisplayName,
+                UserId = userId
+            };
+            //LINE_USERにユーザーを記録
+            using (var context = new jafleetContext())
+            {
+                var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                if(lineuser != null)
+                {
+                    //すでに存在するユーザーの場合（再フォローの場合など）
+                    lineuser.FollowDate = followDate;
+                }
+                else
+                {
+                    //新規ユーザー（普通こっち）
+                    LineUser user = new LineUser
+                    {
+                        UserId = userId,
+                        UserName = profile.DisplayName,
+                        ProfileImage = profileImage,
+                        FollowDate = followDate
+                    };
+                    context.LineUser.Add(user);
+                }
+                context.Log.Add(log);
+                context.SaveChanges();
+            }
+
+        }
+
+        /// <summary>
+        /// アンフォローイベント
+        /// （ユーザー情報とイベントログを記録）
+        /// </summary>
+        /// <param name="ev"></param>
+        /// <returns></returns>
+        protected override async Task OnUnfollowAsync(UnfollowEvent ev)
+        {
+            string unfollowDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
+            string userId = ev.Source.UserId;
+
+            Log log = new Log
+            {
+                LogDate = unfollowDate,
+                LogType = LogType.LINE_UNFOLLOW,
+                LogDetail = userId,
+                UserId = userId
+            };
+            //LINE_USERにユーザーを記録
+            using (var context = new jafleetContext())
+            {
+                var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                if (lineuser != null)
+                {
+                    //ユーザーがLINE_USERテーブルに存在する場合のみ処理
+                    lineuser.UnfollowDate = unfollowDate;
+                }
+                context.Log.Add(log);
+                context.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -169,9 +244,7 @@ namespace jafleet.Line
             };
 
             //ユーザー情報を取得
-            var profile = await messagingClient.GetUserProfileAsync(userId);
-            var httpClient = new HttpClient();
-            var profileImage = await httpClient.GetByteArrayAsync(profile.PictureUrl);
+            (var profile, var profileImage) = await GetUserProfileAsync(userId);
             LineUser user = new LineUser
             {
                 UserId = userId,
@@ -198,6 +271,26 @@ namespace jafleet.Line
                 context.SaveChanges();
             }
 
+        }
+
+        /// <summary>
+        /// プロフィールとプロフィール画像を取得
+        /// </summary>
+        /// <param name="userId">ユーザーID</param>
+        /// <returns></returns>
+        private async Task<(UserProfile, byte[])> GetUserProfileAsync(string userId)
+        {
+            UserProfile retprofile;
+            byte[] retprofileimage = null;
+
+            retprofile = await messagingClient.GetUserProfileAsync(userId);
+            if(retprofile.PictureUrl != null)
+            {
+                var httpClient = new HttpClient();
+                retprofileimage = await httpClient.GetByteArrayAsync(retprofile.PictureUrl);
+            }
+
+            return (retprofile, retprofileimage);
         }
 
     }
