@@ -6,13 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\**" />
-    <Content Remove="wwwroot\**" />
-    <EmbeddedResource Remove="wwwroot\**" />
-    <None Remove="wwwroot\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.9.11" />
     <PackageReference Include="Line.Messaging" Version="1.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.4" />
@@ -26,6 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ja-fleet.Commons\ja-fleet.Commons\ja-fleet.Commons.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

@@ -29,6 +29,7 @@ namespace jafleet.Line
                 app.UseDeveloperExceptionPage();
             }
             app.UseLineValidationMiddleware(Configuration.GetSection("LineSettings")["ChannelSecret"]);
+            app.UseStaticFiles();
             app.UseMvc();
         }        
     }

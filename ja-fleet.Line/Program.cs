@@ -20,7 +20,7 @@ namespace jafleet.Line
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseUrls("http://localhost:6000")
+                .UseUrls("http://localhost:6500")
                 .Build();
     }
 }

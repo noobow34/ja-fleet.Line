@@ -165,19 +165,5 @@ namespace jafleet.Line
 
         }
 
-        private string GetFileExtension(string mediaType)
-        {
-            switch (mediaType)
-            {
-                case "image/jpeg":
-                    return ".jpeg";
-                case "audio/x-m4a":
-                    return ".m4a";
-                case "video/mp4":
-                    return ".mp4";
-                default:
-                    return "";
-            }
-        }
     }
 }
