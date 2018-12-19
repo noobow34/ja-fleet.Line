@@ -29,7 +29,7 @@ namespace jafleet.Line.Logics
                         photoUrlSmall = photoSmallTag[0].GetAttribute("src");
                     }
                     string newestPhotoLink = photoLinkTag[0].GetAttribute("href");
-                    var photoPage = parser.Parse(await HttpClientManager.GetInstance()..GetStringAsync("https://www.jetphotos.com" + newestPhotoLink));
+                    var photoPage = parser.Parse(await HttpClientManager.GetInstance().GetStringAsync("https://www.jetphotos.com" + newestPhotoLink));
                     var photoTag2 = photoPage.GetElementsByClassName("large-photo__img");
                     if (photoTag2.Length != 0)
                     {
