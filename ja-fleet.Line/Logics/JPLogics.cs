@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Parser.Html;
+using jafleet.Line.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,7 @@ namespace jafleet.Line.Logics
             try
             {
                 var parser = new HtmlParser();
-                HttpClient client = new HttpClient();
-                var serchPage = parser.Parse(await client.GetStringAsync(jetphotoUrl));
+                var serchPage = parser.Parse(await HttpClientManager.GetInstance().GetStringAsync(jetphotoUrl));
                 var photoLinkTag = serchPage.GetElementsByClassName("result__photoLink");
                 var photoSmallTag = serchPage.GetElementsByClassName("result__photo");
                 if (photoLinkTag.Length != 0)
@@ -29,7 +29,7 @@ namespace jafleet.Line.Logics
                         photoUrlSmall = photoSmallTag[0].GetAttribute("src");
                     }
                     string newestPhotoLink = photoLinkTag[0].GetAttribute("href");
-                    var photoPage = parser.Parse(await client.GetStringAsync("https://www.jetphotos.com" + newestPhotoLink));
+                    var photoPage = parser.Parse(await HttpClientManager.GetInstance()..GetStringAsync("https://www.jetphotos.com" + newestPhotoLink));
                     var photoTag2 = photoPage.GetElementsByClassName("large-photo__img");
                     if (photoTag2.Length != 0)
                     {

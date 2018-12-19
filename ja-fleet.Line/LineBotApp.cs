@@ -1,6 +1,7 @@
 using jafleet.Constants;
 using jafleet.EF;
 using jafleet.Line.Logics;
+using jafleet.Line.Manager;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using System;
@@ -308,8 +309,7 @@ namespace jafleet.Line
             retprofile = await messagingClient.GetUserProfileAsync(userId);
             if(retprofile?.PictureUrl != null)
             {
-                var httpClient = new HttpClient();
-                retprofileimage = await httpClient.GetByteArrayAsync(retprofile.PictureUrl);
+                retprofileimage = await HttpClientManager.GetInstance().GetByteArrayAsync(retprofile.PictureUrl);
             }
 
             return (retprofile, retprofileimage);
