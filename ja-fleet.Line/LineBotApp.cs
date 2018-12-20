@@ -46,7 +46,7 @@ namespace jafleet.Line
             await messagingClient.ReplyMessageAsync(ev.ReplyToken, new List<ISendMessage> { replyMessage1,replyMessage2 });
 
             //ユーザーに返信してからログを処理
-            string followDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
+            DateTime? followDate = DateTime.Now;
             string userId = ev.Source.UserId;
 
             (var profile, var profileImage) = await GetUserProfileAsync(userId);
@@ -97,7 +97,7 @@ namespace jafleet.Line
         {
             Task task = Task.Run(() =>
             {
-                string unfollowDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
+                DateTime? unfollowDate = DateTime.Now;
                 string userId = ev.Source.UserId;
 
                 //LINE_USERにユーザーを記録
@@ -257,7 +257,7 @@ namespace jafleet.Line
             //ユーザーに返信してからログを処理
             Log log = new Log
             {
-                LogDate = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME),
+                LogDate = DateTime.Now,
                 LogType = LogType.LINE,
                 LogDetail = originalReg,
                 UserId = userId
@@ -277,7 +277,7 @@ namespace jafleet.Line
                 {
                     lineuser.UserName = profile?.DisplayName;
                     lineuser.ProfileImage = profileImage;
-                    lineuser.LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME);
+                    lineuser.LastAccess = DateTime.Now;
                 }
                 else
                 {
@@ -286,7 +286,7 @@ namespace jafleet.Line
                         UserId = userId,
                         UserName = profile.DisplayName,
                         ProfileImage = profileImage,
-                        LastAccess = DateTime.Now.ToString(DBConstant.SQLITE_DATETIME)
+                        LastAccess = DateTime.Now
                     };
                     context.LineUser.Add(user);
                 }
