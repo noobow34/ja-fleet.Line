@@ -1,5 +1,6 @@
 using jafleet.Constants;
 using jafleet.EF;
+using jafleet.Line.Constants;
 using jafleet.Line.Logics;
 using jafleet.Line.Manager;
 using Line.Messaging;
@@ -29,21 +30,7 @@ namespace jafleet.Line
         /// <returns></returns>
         protected override async Task OnFollowAsync(FollowEvent ev)
         {
-            var replyMessage1 = new TextMessage("フォローありがとうございます。\n" +
-                                                "このアカウントのでは使用方法は以下の画像および説明をご確認ください。\n" +
-                                                "・JA-Fleetサイトに登録されている飛行機は詳細情報と写真を検索できます\n" +
-                                                "・JA-Fleetサイトに登録されていない場合は写真のみ検索できます\n" +
-                                                "【検索例】\n" +
-                                                "●JAレジ\n" +
-                                                "801a,JA301J\n" +
-                                                "（JAレジは、'JA'をつけなくてもOK）\n" +
-                                                "●それ以外\n" +
-                                                "80-1111,n501dn, A6-BLA\n" +
-                                                "（省略不可）\n" +
-                                                "※すべて大文字小文字区別せず");
-            var replyMessage2 = new ImageMessage("https://line.ja-fleet.noobow.me/howtouse.jpg", "https://line.ja-fleet.noobow.me/howtouse.jpg");
-
-            await messagingClient.ReplyMessageAsync(ev.ReplyToken, new List<ISendMessage> { replyMessage1,replyMessage2 });
+            await messagingClient.ReplyMessageAsync(ev.ReplyToken, ReplayMessage.FOLLOW_MESSAGE);
 
             //ユーザーに返信してからログを処理
             DateTime? followDate = DateTime.Now;
@@ -224,23 +211,12 @@ namespace jafleet.Line
 
                 if (found)
                 {
-                    replyMessage1 = new TextMessage("JA-Fleetにデータが登録されていないため、写真のみ検索しました。");
+                    replyMessage1 = ReplayMessage.ONLY_PHOTO;
                     replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
                 }
                 else
                 {
-                    replyMessage1 = new TextMessage("JA-Fleetにデータが登録されておらず、写真のみの検索でも見つかりませんでした。\n" +
-                        "------------\n" +
-                        "JA-Fleet登録データ：JAレジで運航中のもの、2018/09以降に抹消されてもの\n" +
-                        "写真のみ検索：Jetphotosサイトに登録されているもの\n" +
-                        "【検索例】\n" +
-                        "●JAレジ\n" +
-                        "801a,JA301J\n" +
-                        "（JAレジは、'JA'をつけなくてもOK）\n" +
-                        "●それ以外\n" +
-                        "80-1111,n501dn, A6-BLA\n" +
-                        "（省略不可）\n" +
-                        "※すべて大文字小文字区別せず");
+                    replyMessage1 = ReplayMessage.NOT_FOUND;
                 }
             }
 
