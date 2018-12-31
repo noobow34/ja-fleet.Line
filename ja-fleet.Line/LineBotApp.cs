@@ -149,101 +149,102 @@ namespace jafleet.Line
             string upperedReg = userMessage.Split("\n")?[0].ToUpper();
             string jaAddUpperedReg = upperedReg;
             string originalReg = userMessage.Split("\n")?[0];
+            var replay = new List<ISendMessage>();
 
-            if (!upperedReg.StartsWith("JA"))
-            {
-                jaAddUpperedReg = "JA" + upperedReg;
-            }
+            //var compareTarget = new DateTime(2019, 1, 2);
+            var compareTarget = DateTime.Now;
 
-            ISendMessage replyMessage1 = null;
-            ISendMessage replyMessage2 = null;
-
-            AircraftView av = null;
             using (var context = new jafleetContext())
             {
-                av = context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
-            }
-
-            if(av != null)
-            {
-                //JA-Fleetのデータベースで見つかった場合
-                string aircraftInfo = $"{av.RegistrationNumber} \n " +
-                    $" 航空会社:{av.AirlineNameJpShort} \n " +
-                    $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
-                    $" 製造番号:{av.SerialNumber} \n " +
-                    $" 登録年月日:{av.RegisterDate} \n " +
-                    $" 運用状況:{av.Operation} \n " +
-                    $" WiFi:{av.Wifi} \n " +
-                    $" 備考:{av.Remarks}";
-
-                replyMessage1 = new TextMessage(aircraftInfo);
-                (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
-                if (!string.IsNullOrEmpty(photosmall))
+                //お正月特別対応
+                if (compareTarget >= new DateTime(2019, 1, 1) && compareTarget < new DateTime(2019, 1, 4))
                 {
-                    replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
-                }
-
-            }
-            else
-            {
-                //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
-
-                //まずはそのまま検索
-                string photolarge;
-                string photosmall;
-                bool found = false;
-                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
-                if (!string.IsNullOrEmpty(photosmall))
-                {
-                    //そのまま検索で見つかった
-                    found = true;
-                }
-                else
-                {
-                    //見つからなければJA付きで検索
-                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
-                    if (!string.IsNullOrEmpty(photosmall))
+                    //1.1～1.3 かつ そのユーザーのログがない
+                    if (context.Log.Where(p => p.UserId == userId && p.LogDate >= new DateTime(2019, 1, 1)).Count() == 0)
                     {
-                        //JA付きの検索で見つかった
-                        found = true;
+                         replay.Add(new TextMessage("あけましておめでとうございます。\n2019年もJA-Fleetをよろしくおねがいします。"));
                     }
                 }
 
-                if (found)
+                if (!upperedReg.StartsWith("JA"))
                 {
-                    replyMessage1 = ReplayMessage.ONLY_PHOTO;
-                    replyMessage2 = new ImageMessage(photolarge, "https:" + photosmall);
+                    jaAddUpperedReg = "JA" + upperedReg;
+                }
+
+                AircraftView av = null;
+            
+                av = context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
+
+                if(av != null)
+                {
+                    //JA-Fleetのデータベースで見つかった場合
+                    string aircraftInfo = $"{av.RegistrationNumber} \n " +
+                        $" 航空会社:{av.AirlineNameJpShort} \n " +
+                        $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
+                        $" 製造番号:{av.SerialNumber} \n " +
+                        $" 登録年月日:{av.RegisterDate} \n " +
+                        $" 運用状況:{av.Operation} \n " +
+                        $" WiFi:{av.Wifi} \n " +
+                        $" 備考:{av.Remarks}";
+
+                    replay.Add(new TextMessage(aircraftInfo));
+                    (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                    if (!string.IsNullOrEmpty(photosmall))
+                    {
+                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                    }
+
                 }
                 else
                 {
-                    replyMessage1 = ReplayMessage.NOT_FOUND;
+                    //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
+
+                    //まずはそのまま検索
+                    string photolarge;
+                    string photosmall;
+                    bool found = false;
+                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
+                    if (!string.IsNullOrEmpty(photosmall))
+                    {
+                        //そのまま検索で見つかった
+                        found = true;
+                    }
+                    else
+                    {
+                        //見つからなければJA付きで検索
+                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                        if (!string.IsNullOrEmpty(photosmall))
+                        {
+                            //JA付きの検索で見つかった
+                            found = true;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        replay.Add(ReplayMessage.ONLY_PHOTO);
+                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                    }
+                    else
+                    {
+                        replay.Add(ReplayMessage.NOT_FOUND);
+                    }
                 }
-            }
 
+                await messagingClient.ReplyMessageAsync(replyToken, replay);
 
-            if (replyMessage2 != null)
-            {
-                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1, replyMessage2 });
-            }
-            else
-            {
-                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { replyMessage1});
-            }
+                //ユーザーに返信してからログを処理
+                Log log = new Log
+                {
+                    LogDate = DateTime.Now,
+                    LogType = LogType.LINE,
+                    LogDetail = originalReg,
+                    UserId = userId
+                };
 
-            //ユーザーに返信してからログを処理
-            Log log = new Log
-            {
-                LogDate = DateTime.Now,
-                LogType = LogType.LINE,
-                LogDetail = originalReg,
-                UserId = userId
-            };
+                //ユーザー情報を取得
+                (var profile, var profileImage) = await GetUserProfileAsync(userId);
 
-            //ユーザー情報を取得
-            (var profile, var profileImage) = await GetUserProfileAsync(userId);
-
-            using (var context = new jafleetContext())
-            {
                 //Log登録
                 context.Log.Add(log);
 
