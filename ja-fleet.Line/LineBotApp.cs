@@ -151,21 +151,8 @@ namespace jafleet.Line
             string originalReg = userMessage.Split("\n")?[0];
             var replay = new List<ISendMessage>();
 
-            //var compareTarget = new DateTime(2019, 1, 2);
-            var compareTarget = DateTime.Now;
-
             using (var context = new jafleetContext())
             {
-                //お正月特別対応
-                if (compareTarget >= new DateTime(2019, 1, 1) && compareTarget < new DateTime(2019, 1, 4))
-                {
-                    //1.1～1.3 かつ そのユーザーのログがない
-                    if (context.Log.Where(p => p.UserId == userId && p.LogDate >= new DateTime(2019, 1, 1)).Count() == 0)
-                    {
-                         replay.Add(new TextMessage("あけましておめでとうございます。\n2019年もJA-Fleetをよろしくおねがいします。"));
-                    }
-                }
-
                 if (!upperedReg.StartsWith("JA"))
                 {
                     jaAddUpperedReg = "JA" + upperedReg;
