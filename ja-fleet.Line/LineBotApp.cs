@@ -1,5 +1,5 @@
-using jafleet.Constants;
-using jafleet.EF;
+using jafleet.Commons.Constants;
+using jafleet.Commons.EF;
 using jafleet.Line.Constants;
 using jafleet.Line.Logics;
 using jafleet.Line.Manager;
