@@ -8,7 +8,6 @@ using Line.Messaging.Webhooks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace jafleet.Line
@@ -16,10 +15,12 @@ namespace jafleet.Line
     internal class LineBotApp : WebhookApplication
     {
         private LineMessagingClient messagingClient { get; }
+        private readonly jafleetContext _context;
 
-        public LineBotApp(LineMessagingClient lineMessagingClient)
+        public LineBotApp(LineMessagingClient lineMessagingClient,jafleetContext context)
         {
             this.messagingClient = lineMessagingClient;
+            _context = context;
         }
 
         /// <summary>
@@ -45,32 +46,29 @@ namespace jafleet.Line
                 UserId = userId
             };
             //LINE_USERにユーザーを記録
-            using (var context = new jafleetContext())
+            var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+            if(lineuser != null)
             {
-                var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
-                if(lineuser != null)
-                {
-                    //すでに存在するユーザーの場合（再フォローの場合など）
-                    lineuser.FollowDate = followDate;
-                }
-                else
-                {
-                    //新規ユーザー（普通こっち）
-                    LineUser user = new LineUser
-                    {
-                        UserId = userId,
-                        UserName = profile?.DisplayName,
-                        FollowDate = followDate
-                    };
-                    if(profileImage != null)
-                    {
-                        user.ProfileImage = profileImage;
-                    }
-                    context.LineUser.Add(user);
-                }
-                context.Log.Add(log);
-                context.SaveChanges();
+                //すでに存在するユーザーの場合（再フォローの場合など）
+                lineuser.FollowDate = followDate;
             }
+            else
+            {
+                //新規ユーザー（普通こっち）
+                LineUser user = new LineUser
+                {
+                    UserId = userId,
+                    UserName = profile?.DisplayName,
+                    FollowDate = followDate
+                };
+                if(profileImage != null)
+                {
+                    user.ProfileImage = profileImage;
+                }
+                _context.LineUser.Add(user);
+            }
+            _context.Log.Add(log);
+            _context.SaveChanges();
 
         }
 
@@ -82,7 +80,7 @@ namespace jafleet.Line
         /// <returns></returns>
         protected override async Task OnUnfollowAsync(UnfollowEvent ev)
         {
-            Task task = Task.Run(() =>
+            await Task.Run(() =>
             {
                 DateTime? unfollowDate = DateTime.Now;
                 string userId = ev.Source.UserId;
@@ -90,7 +88,7 @@ namespace jafleet.Line
                 //LINE_USERにユーザーを記録
                 using (var context = new jafleetContext())
                 {
-                    var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                    var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
                     if (lineuser != null)
                     {
                         //ユーザーがLINE_USERテーブルに存在する場合
@@ -114,12 +112,11 @@ namespace jafleet.Line
                         UserId = userId
                     };
 
-                    context.Log.Add(log);
-                    context.SaveChanges();
+                    _context.Log.Add(log);
+                    _context.SaveChanges();
                 }
             });
 
-            await task;
         }
 
         /// <summary>
@@ -151,112 +148,109 @@ namespace jafleet.Line
             string originalReg = userMessage.Split("\n")?[0];
             var replay = new List<ISendMessage>();
 
-            using (var context = new jafleetContext())
+            if (!upperedReg.StartsWith("JA"))
             {
-                if (!upperedReg.StartsWith("JA"))
+                jaAddUpperedReg = "JA" + upperedReg;
+            }
+
+            AircraftView av = null;
+            
+            av = _context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
+
+            if(av != null)
+            {
+                //JA-Fleetのデータベースで見つかった場合
+                string aircraftInfo = $"{av.RegistrationNumber} \n " +
+                    $" 航空会社:{av.AirlineNameJpShort} \n " +
+                    $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
+                    $" 製造番号:{av.SerialNumber} \n " +
+                    $" 登録年月日:{av.RegisterDate} \n " +
+                    $" 運用状況:{av.Operation} \n " +
+                    $" WiFi:{av.Wifi} \n " +
+                    $" 備考:{av.Remarks}";
+
+                replay.Add(new TextMessage(aircraftInfo));
+                (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                if (!string.IsNullOrEmpty(photosmall))
                 {
-                    jaAddUpperedReg = "JA" + upperedReg;
+                    replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
                 }
 
-                AircraftView av = null;
-            
-                av = context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
+            }
+            else
+            {
+                //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
 
-                if(av != null)
+                //まずはそのまま検索
+                string photolarge;
+                string photosmall;
+                bool found = false;
+                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
+                if (!string.IsNullOrEmpty(photosmall))
                 {
-                    //JA-Fleetのデータベースで見つかった場合
-                    string aircraftInfo = $"{av.RegistrationNumber} \n " +
-                        $" 航空会社:{av.AirlineNameJpShort} \n " +
-                        $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
-                        $" 製造番号:{av.SerialNumber} \n " +
-                        $" 登録年月日:{av.RegisterDate} \n " +
-                        $" 運用状況:{av.Operation} \n " +
-                        $" WiFi:{av.Wifi} \n " +
-                        $" 備考:{av.Remarks}";
-
-                    replay.Add(new TextMessage(aircraftInfo));
-                    (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
-                    if (!string.IsNullOrEmpty(photosmall))
-                    {
-                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
-                    }
-
+                    //そのまま検索で見つかった
+                    found = true;
                 }
                 else
                 {
-                    //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
-
-                    //まずはそのまま検索
-                    string photolarge;
-                    string photosmall;
-                    bool found = false;
-                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
+                    //見つからなければJA付きで検索
+                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
                     if (!string.IsNullOrEmpty(photosmall))
                     {
-                        //そのまま検索で見つかった
+                        //JA付きの検索で見つかった
                         found = true;
                     }
-                    else
-                    {
-                        //見つからなければJA付きで検索
-                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
-                        if (!string.IsNullOrEmpty(photosmall))
-                        {
-                            //JA付きの検索で見つかった
-                            found = true;
-                        }
-                    }
-
-                    if (found)
-                    {
-                        replay.Add(ReplayMessage.ONLY_PHOTO);
-                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
-                    }
-                    else
-                    {
-                        replay.Add(ReplayMessage.NOT_FOUND);
-                    }
                 }
 
-                await messagingClient.ReplyMessageAsync(replyToken, replay);
-
-                //ユーザーに返信してからログを処理
-                Log log = new Log
+                if (found)
                 {
-                    LogDate = DateTime.Now,
-                    LogType = LogType.LINE,
-                    LogDetail = originalReg,
-                    UserId = userId
-                };
-
-                //ユーザー情報を取得
-                (var profile, var profileImage) = await GetUserProfileAsync(userId);
-
-                //Log登録
-                context.Log.Add(log);
-
-                //LineUser登録または更新
-                var lineuser = context.LineUser.SingleOrDefault(p => p.UserId == userId);
-                if(lineuser != null)
-                {
-                    lineuser.UserName = profile?.DisplayName;
-                    lineuser.ProfileImage = profileImage;
-                    lineuser.LastAccess = DateTime.Now;
+                    replay.Add(ReplayMessage.ONLY_PHOTO);
+                    replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
                 }
                 else
                 {
-                    LineUser user = new LineUser
-                    {
-                        UserId = userId,
-                        UserName = profile.DisplayName,
-                        ProfileImage = profileImage,
-                        LastAccess = DateTime.Now
-                    };
-                    context.LineUser.Add(user);
+                    replay.Add(ReplayMessage.NOT_FOUND);
                 }
-
-                context.SaveChanges();
             }
+
+            await messagingClient.ReplyMessageAsync(replyToken, replay);
+
+            //ユーザーに返信してからログを処理
+            Log log = new Log
+            {
+                LogDate = DateTime.Now,
+                LogType = LogType.LINE,
+                LogDetail = originalReg,
+                UserId = userId
+            };
+
+            //ユーザー情報を取得
+            (var profile, var profileImage) = await GetUserProfileAsync(userId);
+
+            //Log登録
+            _context.Log.Add(log);
+
+            //LineUser登録または更新
+            var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+            if(lineuser != null)
+            {
+                lineuser.UserName = profile?.DisplayName;
+                lineuser.ProfileImage = profileImage;
+                lineuser.LastAccess = DateTime.Now;
+            }
+            else
+            {
+                LineUser user = new LineUser
+                {
+                    UserId = userId,
+                    UserName = profile.DisplayName,
+                    ProfileImage = profileImage,
+                    LastAccess = DateTime.Now
+                };
+                _context.LineUser.Add(user);
+            }
+
+            _context.SaveChanges();
 
         }
 

@@ -1,3 +1,4 @@
+using jafleet.Commons.EF;
 using jafleet.Line.Middleware;
 using jafleet.Line.Models;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +19,7 @@ namespace jafleet.Line
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<jafleetContext>();
             services.AddMvc();
             services.Configure<AppSettings>(Configuration);
         }
