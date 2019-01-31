@@ -3,6 +3,7 @@ using jafleet.Line.Middleware;
 using jafleet.Line.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +21,7 @@ namespace jafleet.Line
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<jafleetContext>();
-            services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2); ;
             services.Configure<AppSettings>(Configuration);
         }
 
