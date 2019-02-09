@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using jafleet.Line.Manager;
 using jafleet.Commons.EF;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace jafleet.Line.Controllers
 {
@@ -12,9 +13,11 @@ namespace jafleet.Line.Controllers
     public class LineBotController : Controller
     {
         private readonly jafleetContext _context;
-        public LineBotController(jafleetContext context)
+        private readonly IServiceScopeFactory _services;
+        public LineBotController(jafleetContext context, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
+            _services = serviceScopeFactory;
         }
 
         /// <summary>
@@ -26,7 +29,7 @@ namespace jafleet.Line.Controllers
         { 
             var events = WebhookEventParser.Parse(req.ToString());
 
-            var app = new LineBotApp(LineMessagingClientManager.GetInstance(),_context);
+            var app = new LineBotApp(LineMessagingClientManager.GetInstance(),_context, _services);
             await app.RunAsync(events);
             return new OkResult();
         }

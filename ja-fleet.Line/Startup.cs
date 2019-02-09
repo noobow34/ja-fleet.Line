@@ -4,8 +4,12 @@ using jafleet.Line.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using System;
 
 namespace jafleet.Line
 {
@@ -20,7 +24,20 @@ namespace jafleet.Line
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<jafleetContext>();
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder => builder
+            .AddConsole()
+            .AddFilter(level => level >= LogLevel.Information)
+            );
+            var loggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
+
+            services.AddDbContextPool<jafleetContext>(
+                options => options.UseLoggerFactory(loggerFactory).UseMySql(Configuration.GetConnectionString("DefaultConnection"),
+                    mySqlOptions =>
+                    {
+                        mySqlOptions.ServerVersion(new Version(10, 3), ServerType.MariaDb);
+                    }
+            ));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2); ;
             services.Configure<AppSettings>(Configuration);
         }

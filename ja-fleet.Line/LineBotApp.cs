@@ -5,6 +5,7 @@ using jafleet.Line.Logics;
 using jafleet.Line.Manager;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,13 @@ namespace jafleet.Line
     {
         private LineMessagingClient messagingClient { get; }
         private readonly jafleetContext _context;
+        private readonly IServiceScopeFactory _services;
 
-        public LineBotApp(LineMessagingClient lineMessagingClient,jafleetContext context)
+        public LineBotApp(LineMessagingClient lineMessagingClient,jafleetContext context, IServiceScopeFactory serviceScopeFactory)
         {
             this.messagingClient = lineMessagingClient;
             _context = context;
+            _services = serviceScopeFactory;
         }
 
         /// <summary>
@@ -86,34 +89,37 @@ namespace jafleet.Line
                 string userId = ev.Source.UserId;
 
                 //LINE_USERにユーザーを記録
-                using (var context = new jafleetContext())
+                using (var serviceScope = _services.CreateScope())
                 {
-                    var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
-                    if (lineuser != null)
+                    using (var context = serviceScope.ServiceProvider.GetService<jafleetContext>())
                     {
-                        //ユーザーがLINE_USERテーブルに存在する場合
-                        lineuser.UnfollowDate = unfollowDate;
-                    }
-                    else
-                    {
-                        //ユーザーがLINE_USERテーブルに存在しない場合（初期のユーザーなど）
-                        var unfollowedUser = new LineUser
+                        var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                        if (lineuser != null)
                         {
-                            UserId = userId,
-                            UnfollowDate = unfollowDate
+                            //ユーザーがLINE_USERテーブルに存在する場合
+                            lineuser.UnfollowDate = unfollowDate;
+                        }
+                        else
+                        {
+                            //ユーザーがLINE_USERテーブルに存在しない場合（初期のユーザーなど）
+                            var unfollowedUser = new LineUser
+                            {
+                                UserId = userId,
+                                UnfollowDate = unfollowDate
+                            };
+                        }
+
+                        Log log = new Log
+                        {
+                            LogDate = unfollowDate,
+                            LogType = LogType.LINE_UNFOLLOW,
+                            LogDetail = (lineuser?.UserName) ?? userId,
+                            UserId = userId
                         };
+
+                        _context.Log.Add(log);
+                        _context.SaveChanges();
                     }
-
-                    Log log = new Log
-                    {
-                        LogDate = unfollowDate,
-                        LogType = LogType.LINE_UNFOLLOW,
-                        LogDetail = (lineuser?.UserName) ?? userId,
-                        UserId = userId
-                    };
-
-                    _context.Log.Add(log);
-                    _context.SaveChanges();
                 }
             });
 
