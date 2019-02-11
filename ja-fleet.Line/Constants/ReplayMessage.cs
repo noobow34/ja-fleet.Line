@@ -29,9 +29,9 @@ namespace jafleet.Line.Constants
         public static readonly TextMessage SEND_MESSAGE = new TextMessage("メッセージを受信しました。\n" +
                                                                             "ありがとうございましたm(_ _)m");
 
-        public static readonly TextMessage NOT_FOUND = new TextMessage("見つかりませんでした。" +
+        public static readonly TextMessage NOT_FOUND = new TextMessage("見つかりませんでした。\n" +
                                                                        "----------\n" +
-                                                                        "検索方法を確認するには「検索方法」と入力してください。" +
+                                                                        "検索方法を確認するには「検索方法」と入力してください。\n" +
                                                                         "管理人にメッセージを送るには1行目に「メッセージ」と書いて、2行目以降にメッセージを入力してください。");
 
         public static readonly TextMessage HOWTO_SEARCH = new TextMessage("【検索対象】\n"+
