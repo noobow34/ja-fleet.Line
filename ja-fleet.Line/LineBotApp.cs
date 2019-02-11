@@ -158,7 +158,18 @@ namespace jafleet.Line
             if (userMessage.Contains(CommandConstant.MESSAGE))
             {
                 await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage>() { ReplayMessage.SEND_MESSAGE });
+                string messageBody = userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty);
+                var m = new Message
+                {
+                    Sender = userId,
+                    MessageDetail = messageBody,
+                    MessageType = Commons.Constants.MessageType.LINE,
+                    RecieveDate = DateTime.Now
+                };
+                _context.Messages.Add(m);
+                _context.SaveChanges();
                 LineUtil.PushMe("【JA-Fleet from LINE】\n" +
+                                    "ユーザー：" + _context.LineUser.Find(userId)?.UserName ?? userId +
                                     userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty), HttpClientManager.GetInstance());
             }
             else if (userMessage.Contains(CommandConstant.HOWTOSEARCH))
