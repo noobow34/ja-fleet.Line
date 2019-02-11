@@ -158,7 +158,7 @@ namespace jafleet.Line
             if (userMessage.Contains(CommandConstant.MESSAGE))
             {
                 LineUtil.PushMe("【JA-Fleet from LINE】\n" +
-                                    userMessage.Replace(CommandConstant.MESSAGE + "\n",string.Empty),HttpClientManager.GetInstance())
+                                    userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty), HttpClientManager.GetInstance());
             }
             else
             {
