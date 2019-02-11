@@ -169,7 +169,7 @@ namespace jafleet.Line
                 _context.Messages.Add(m);
                 _context.SaveChanges();
                 LineUtil.PushMe("【JA-Fleet from LINE】\n" +
-                                    "ユーザー：" + _context.LineUser.Find(userId)?.UserName ?? userId +
+                                    "ユーザー：" + (_context.LineUser.Find(userId)?.UserName ?? userId) +
                                     userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty), HttpClientManager.GetInstance());
             }
             else if (userMessage.Contains(CommandConstant.HOWTOSEARCH))
