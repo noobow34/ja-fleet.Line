@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ja-fleet.Line", "ja-fleet.L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ja-fleet.Commons", "..\ja-fleet.Commons\ja-fleet.Commons\ja-fleet.Commons.csproj", "{86AB0276-BCDE-4097-800E-32D0F936D759}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobow.Commons", "..\Noobow.Commons\Noobow.Commons\Noobow.Commons.csproj", "{7CACF34E-6E1A-4CA1-8966-36C71BE5071D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{86AB0276-BCDE-4097-800E-32D0F936D759}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86AB0276-BCDE-4097-800E-32D0F936D759}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86AB0276-BCDE-4097-800E-32D0F936D759}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CACF34E-6E1A-4CA1-8966-36C71BE5071D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CACF34E-6E1A-4CA1-8966-36C71BE5071D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CACF34E-6E1A-4CA1-8966-36C71BE5071D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CACF34E-6E1A-4CA1-8966-36C71BE5071D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

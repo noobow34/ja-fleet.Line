@@ -6,6 +6,7 @@ using jafleet.Line.Manager;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using Microsoft.Extensions.DependencyInjection;
+using Noobow.Commons.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -151,112 +152,121 @@ namespace jafleet.Line
         {
             string upperedReg = userMessage.Split("\n")?[0].ToUpper();
             string jaAddUpperedReg = upperedReg;
-            string originalReg = userMessage.Split("\n")?[0];
+            string firstLine = userMessage.Split("\n")?[0];
             var replay = new List<ISendMessage>();
 
-            if (!upperedReg.StartsWith("JA"))
+            if (userMessage.Contains(CommandConstant.MESSAGE))
             {
-                jaAddUpperedReg = "JA" + upperedReg;
-            }
-
-            AircraftView av = null;
-            
-            av = _context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
-
-            if(av != null)
-            {
-                //JA-Fleetのデータベースで見つかった場合
-                string aircraftInfo = $"{av.RegistrationNumber} \n " +
-                    $" 航空会社:{av.AirlineNameJpShort} \n " +
-                    $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
-                    $" 製造番号:{av.SerialNumber} \n " +
-                    $" 登録年月日:{av.RegisterDate} \n " +
-                    $" 運用状況:{av.Operation} \n " +
-                    $" WiFi:{av.Wifi} \n " +
-                    $" 備考:{av.Remarks}";
-
-                replay.Add(new TextMessage(aircraftInfo));
-                (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
-                if (!string.IsNullOrEmpty(photosmall))
-                {
-                    replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
-                }
-
+                LineUtil.PushMe("【JA-Fleet from LINE】\n" +
+                                    userMessage.Replace(CommandConstant.MESSAGE + "\n",string.Empty),HttpClientManager.GetInstance())
             }
             else
             {
-                //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
-
-                //まずはそのまま検索
-                string photolarge;
-                string photosmall;
-                bool found = false;
-                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
-                if (!string.IsNullOrEmpty(photosmall))
+                //通常の利用（レジ）
+                if (!upperedReg.StartsWith("JA"))
                 {
-                    //そのまま検索で見つかった
-                    found = true;
+                    jaAddUpperedReg = "JA" + upperedReg;
+                }
+
+                AircraftView av = null;
+
+                av = _context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
+
+                if (av != null)
+                {
+                    //JA-Fleetのデータベースで見つかった場合
+                    string aircraftInfo = $"{av.RegistrationNumber} \n " +
+                        $" 航空会社:{av.AirlineNameJpShort} \n " +
+                        $" 型式:{av.TypeDetailName ?? av.TypeName} \n " +
+                        $" 製造番号:{av.SerialNumber} \n " +
+                        $" 登録年月日:{av.RegisterDate} \n " +
+                        $" 運用状況:{av.Operation} \n " +
+                        $" WiFi:{av.Wifi} \n " +
+                        $" 備考:{av.Remarks}";
+
+                    replay.Add(new TextMessage(aircraftInfo));
+                    (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                    if (!string.IsNullOrEmpty(photosmall))
+                    {
+                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                    }
+
                 }
                 else
                 {
-                    //見つからなければJA付きで検索
-                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                    //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
+
+                    //まずはそのまま検索
+                    string photolarge;
+                    string photosmall;
+                    bool found = false;
+                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
                     if (!string.IsNullOrEmpty(photosmall))
                     {
-                        //JA付きの検索で見つかった
+                        //そのまま検索で見つかった
                         found = true;
+                    }
+                    else
+                    {
+                        //見つからなければJA付きで検索
+                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                        if (!string.IsNullOrEmpty(photosmall))
+                        {
+                            //JA付きの検索で見つかった
+                            found = true;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        replay.Add(ReplayMessage.ONLY_PHOTO);
+                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                    }
+                    else
+                    {
+                        replay.Add(ReplayMessage.NOT_FOUND);
                     }
                 }
 
-                if (found)
+                await messagingClient.ReplyMessageAsync(replyToken, replay);
+
+                //ユーザーに返信してからログを処理
+                Log log = new Log
                 {
-                    replay.Add(ReplayMessage.ONLY_PHOTO);
-                    replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                    LogDate = DateTime.Now,
+                    LogType = LogType.LINE,
+                    LogDetail = firstLine,
+                    UserId = userId
+                };
+
+                //ユーザー情報を取得
+                (var profile, var profileImage) = await GetUserProfileAsync(userId);
+
+                //Log登録
+                _context.Log.Add(log);
+
+                //LineUser登録または更新
+                var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                if (lineuser != null)
+                {
+                    lineuser.UserName = profile?.DisplayName;
+                    lineuser.ProfileImage = profileImage;
+                    lineuser.LastAccess = DateTime.Now;
                 }
                 else
                 {
-                    replay.Add(ReplayMessage.NOT_FOUND);
+                    LineUser user = new LineUser
+                    {
+                        UserId = userId,
+                        UserName = profile.DisplayName,
+                        ProfileImage = profileImage,
+                        LastAccess = DateTime.Now
+                    };
+                    _context.LineUser.Add(user);
                 }
+
+                _context.SaveChanges();
             }
-
-            await messagingClient.ReplyMessageAsync(replyToken, replay);
-
-            //ユーザーに返信してからログを処理
-            Log log = new Log
-            {
-                LogDate = DateTime.Now,
-                LogType = LogType.LINE,
-                LogDetail = originalReg,
-                UserId = userId
-            };
-
-            //ユーザー情報を取得
-            (var profile, var profileImage) = await GetUserProfileAsync(userId);
-
-            //Log登録
-            _context.Log.Add(log);
-
-            //LineUser登録または更新
-            var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
-            if(lineuser != null)
-            {
-                lineuser.UserName = profile?.DisplayName;
-                lineuser.ProfileImage = profileImage;
-                lineuser.LastAccess = DateTime.Now;
-            }
-            else
-            {
-                LineUser user = new LineUser
-                {
-                    UserId = userId,
-                    UserName = profile.DisplayName,
-                    ProfileImage = profileImage,
-                    LastAccess = DateTime.Now
-                };
-                _context.LineUser.Add(user);
-            }
-
-            _context.SaveChanges();
 
         }
 

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ja-fleet.Commons\ja-fleet.Commons\ja-fleet.Commons.csproj" />
+    <ProjectReference Include="..\..\Noobow.Commons\Noobow.Commons\Noobow.Commons.csproj" />
   </ItemGroup>
 
 </Project>
