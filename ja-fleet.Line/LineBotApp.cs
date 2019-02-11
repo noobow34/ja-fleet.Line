@@ -157,8 +157,13 @@ namespace jafleet.Line
 
             if (userMessage.Contains(CommandConstant.MESSAGE))
             {
+                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage>() { ReplayMessage.SEND_MESSAGE });
                 LineUtil.PushMe("【JA-Fleet from LINE】\n" +
                                     userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty), HttpClientManager.GetInstance());
+            }
+            else if (userMessage.Contains(CommandConstant.HOWTOSEARCH))
+            {
+                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage>() { ReplayMessage.HOWTO_SEARCH });
             }
             else
             {
@@ -219,7 +224,6 @@ namespace jafleet.Line
 
                     if (found)
                     {
-                        replay.Add(ReplayMessage.ONLY_PHOTO);
                         replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
                     }
                     else
