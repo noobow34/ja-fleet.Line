@@ -65,11 +65,17 @@ namespace jafleet.Line
                     UserName = profile?.DisplayName,
                     FollowDate = followDate
                 };
-                if(profileImage != null)
-                {
-                    user.ProfileImage = profileImage;
-                }
                 _context.LineUser.Add(user);
+                if (profileImage != null)
+                {
+                    var lpi = new LineUserProfileImage
+                    {
+                        UserId = userId,
+                        ProfileImage = profileImage,
+                        UpdateTIme = lineuser.LastAccess
+                    };
+                    _context.LineUserProfileImage.Add(lpi);
+                }
             }
             _context.Log.Add(log);
             _context.SaveChanges();
@@ -254,9 +260,6 @@ namespace jafleet.Line
                     UserId = userId
                 };
 
-                //ユーザー情報を取得
-                (var profile, var profileImage) = await GetUserProfileAsync(userId);
-
                 //Log登録
                 _context.Log.Add(log);
 
@@ -264,22 +267,57 @@ namespace jafleet.Line
                 var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
                 if (lineuser != null)
                 {
-                    lineuser.UserName = profile?.DisplayName;
-                    lineuser.ProfileImage = profileImage;
+                    //ユーザーのレコードがある
                     lineuser.LastAccess = DateTime.Now;
+                    if(DateTime.Now - lineuser.LastAccess > new TimeSpan(7, 0, 0, 0))
+                    {
+                        //前回アクセスから1週間以上
+                        (var profile, var profileImage) = await GetUserProfileAsync(userId);
+                        lineuser.UserName = profile.DisplayName;
+                        if(profileImage != null)
+                        {
+                            var lpi = _context.LineUserProfileImage.Single(pi => pi.UserId == userId);
+                            if (lpi != null)
+                            {
+                                lpi.ProfileImage = profileImage;
+                                lpi.UpdateTIme = lineuser.LastAccess;
+                            }
+                            else
+                            {
+                                lpi = new LineUserProfileImage
+                                {
+                                    UserId = userId,
+                                    ProfileImage = profileImage,
+                                    UpdateTIme = lineuser.LastAccess
+                                };
+                                _context.LineUserProfileImage.Add(lpi);
+                            }
+                        }
+                    }
                 }
                 else
                 {
+                    //ユーザーのレコードがない
+                    //ユーザー情報を取得
+                    (var profile, var profileImage) = await GetUserProfileAsync(userId);
                     LineUser user = new LineUser
                     {
                         UserId = userId,
                         UserName = profile.DisplayName,
-                        ProfileImage = profileImage,
                         LastAccess = DateTime.Now
                     };
                     _context.LineUser.Add(user);
+                    if(profileImage != null)
+                    {
+                        LineUserProfileImage lpi = new LineUserProfileImage
+                        {
+                            UserId = userId,
+                            ProfileImage = profileImage,
+                            UpdateTIme = user.LastAccess
+                        };
+                        _context.LineUserProfileImage.Add(lpi);
+                    }
                 }
-
                 _context.SaveChanges();
             }
 
