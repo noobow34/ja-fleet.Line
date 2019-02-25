@@ -269,11 +269,12 @@ namespace jafleet.Line
                 {
                     //ユーザーのレコードがある
                     lineuser.LastAccess = DateTime.Now;
-                    if(DateTime.Now - lineuser.LastAccess > new TimeSpan(7, 0, 0, 0))
+                    if((DateTime.Now - lineuser.ProfileUpdateTime) > new TimeSpan(7, 0, 0, 0))
                     {
                         //前回アクセスから1週間以上
                         (var profile, var profileImage) = await GetUserProfileAsync(userId);
                         lineuser.UserName = profile.DisplayName;
+                        lineuser.ProfileUpdateTime = lineuser.LastAccess;
                         if(profileImage != null)
                         {
                             var lpi = _context.LineUserProfileImage.Single(pi => pi.UserId == userId);
