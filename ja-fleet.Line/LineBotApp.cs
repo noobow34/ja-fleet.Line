@@ -64,7 +64,8 @@ namespace jafleet.Line
                 {
                     UserId = userId,
                     UserName = profile?.DisplayName,
-                    FollowDate = followDate
+                    FollowDate = followDate,
+                    ProfileUpdateTime = followDate
                 };
                 _context.LineUser.Add(user);
                 if (profileImage != null)
