@@ -49,6 +49,7 @@ namespace jafleet.Line
                 LogDetail = profile?.DisplayName,
                 UserId = userId
             };
+            _context.Log.Add(log);
             //LINE_USERにユーザーを記録
             var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
             if(lineuser != null)
@@ -72,12 +73,11 @@ namespace jafleet.Line
                     {
                         UserId = userId,
                         ProfileImage = profileImage,
-                        UpdateTIme = lineuser.LastAccess
+                        UpdateTIme = followDate
                     };
                     _context.LineUserProfileImage.Add(lpi);
                 }
             }
-            _context.Log.Add(log);
             _context.SaveChanges();
 
         }
