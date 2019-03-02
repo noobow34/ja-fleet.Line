@@ -252,10 +252,11 @@ namespace jafleet.Line
 
                 await messagingClient.ReplyMessageAsync(replyToken, replay);
 
+                var processDate = DateTime.Now;
                 //ユーザーに返信してからログを処理
                 Log log = new Log
                 {
-                    LogDate = DateTime.Now,
+                    LogDate = processDate,
                     LogType = LogType.LINE,
                     LogDetail = firstLine,
                     UserId = userId
@@ -269,20 +270,20 @@ namespace jafleet.Line
                 if (lineuser != null)
                 {
                     //ユーザーのレコードがある
-                    lineuser.LastAccess = DateTime.Now;
-                    if((DateTime.Now - lineuser.ProfileUpdateTime) > new TimeSpan(7, 0, 0, 0))
+                    lineuser.LastAccess = processDate;
+                    if(lineuser.ProfileUpdateTime == null ||(DateTime.Now - lineuser.ProfileUpdateTime) > new TimeSpan(7, 0, 0, 0))
                     {
                         //前回アクセスから1週間以上
                         (var profile, var profileImage) = await GetUserProfileAsync(userId);
                         lineuser.UserName = profile.DisplayName;
-                        lineuser.ProfileUpdateTime = lineuser.LastAccess;
+                        lineuser.ProfileUpdateTime = processDate;
                         if(profileImage != null)
                         {
                             var lpi = _context.LineUserProfileImage.Single(pi => pi.UserId == userId);
                             if (lpi != null)
                             {
                                 lpi.ProfileImage = profileImage;
-                                lpi.UpdateTIme = lineuser.LastAccess;
+                                lpi.UpdateTIme = processDate;
                             }
                             else
                             {
@@ -290,7 +291,7 @@ namespace jafleet.Line
                                 {
                                     UserId = userId,
                                     ProfileImage = profileImage,
-                                    UpdateTIme = lineuser.LastAccess
+                                    UpdateTIme = processDate
                                 };
                                 _context.LineUserProfileImage.Add(lpi);
                             }
@@ -306,7 +307,8 @@ namespace jafleet.Line
                     {
                         UserId = userId,
                         UserName = profile.DisplayName,
-                        LastAccess = DateTime.Now
+                        LastAccess = processDate,
+                        ProfileUpdateTime = processDate
                     };
                     _context.LineUser.Add(user);
                     if(profileImage != null)
@@ -315,7 +317,7 @@ namespace jafleet.Line
                         {
                             UserId = userId,
                             ProfileImage = profileImage,
-                            UpdateTIme = user.LastAccess
+                            UpdateTIme = processDate
                         };
                         _context.LineUserProfileImage.Add(lpi);
                     }
