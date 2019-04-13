@@ -211,7 +211,7 @@ namespace jafleet.Line
                     (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
                     if (!string.IsNullOrEmpty(photosmall))
                     {
-                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                        replay.Add(new ImageMessage(photolarge, photosmall));
                     }
 
                 }

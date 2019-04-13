@@ -23,15 +23,9 @@ namespace jafleet.Line.Logics
                 {
                     if (photoSmallTag.Length != 0)
                     {
-                        photoUrlSmall = photoSmallTag[0].GetAttribute("src");
+                        photoUrlSmall = "https:" + photoSmallTag[0].GetAttribute("src");
                     }
-                    string newestPhotoLink = photoLinkTag[0].GetAttribute("href");
-                    var photoPage = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync("https://www.jetphotos.com" + newestPhotoLink));
-                    var photoTag2 = photoPage.GetElementsByClassName("large-photo__img");
-                    if (photoTag2.Length != 0)
-                    {
-                        photoUrlLarge = photoTag2[0].GetAttribute("srcset");
-                    }
+                    photoUrlLarge = photoUrlSmall.Replace("/400/","/full/");
                 }
             }
             catch (Exception)
