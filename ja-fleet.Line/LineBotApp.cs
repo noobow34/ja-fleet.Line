@@ -242,7 +242,7 @@ namespace jafleet.Line
 
                     if (found)
                     {
-                        replay.Add(new ImageMessage(photolarge, "https:" + photosmall));
+                        replay.Add(new ImageMessage(photolarge, photosmall));
                     }
                     else
                     {
