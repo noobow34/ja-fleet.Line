@@ -208,7 +208,21 @@ namespace jafleet.Line
                         $" 備考:{av.Remarks}";
 
                     replay.Add(new TextMessage(aircraftInfo));
-                    (string photolarge, string photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                    string photolarge = null;
+                    string photosmall = null;
+                    if (!string.IsNullOrEmpty(av.LinkUrl))
+                    {
+                        if (av.LinkUrl.Contains("jetphotos"))
+                        {
+                            //LinkUrlがJetphotosなら写真を取得
+                            (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(av.LinkUrl);
+                        }
+                    }
+                    else
+                    {
+                        //検索して写真を取得
+                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                    }
                     if (!string.IsNullOrEmpty(photosmall))
                     {
                         replay.Add(new ImageMessage(photolarge, photosmall));

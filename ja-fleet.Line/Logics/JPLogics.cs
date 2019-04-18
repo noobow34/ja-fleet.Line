@@ -35,5 +35,29 @@ namespace jafleet.Line.Logics
 
             return (photoUrlLarge,photoUrlSmall);
         }
+
+        public static async Task<(string large, string small)> GetJetPhotosFromJetphotosUrl(string url)
+        {
+            string photoUrlSmall = string.Empty;
+            string photoUrlLarge = string.Empty;
+            var parser = new HtmlParser();
+
+            try
+            {
+                var photoPage = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync(url));
+                var photoTag = photoPage.GetElementsByClassName("large-photo__img");
+                if (photoTag.Length != 0)
+                {
+                    photoUrlLarge = photoTag[0].GetAttribute("srcset");
+                    photoUrlSmall = photoUrlLarge.Replace("/full/", "/400/");
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+            return (photoUrlLarge, photoUrlSmall);
+        }
     }
 }
