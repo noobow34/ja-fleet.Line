@@ -1,3 +1,4 @@
+using AngleSharp.Html.Parser;
 using jafleet.Commons.Constants;
 using jafleet.Commons.EF;
 using jafleet.Line.Constants;
@@ -223,8 +224,70 @@ namespace jafleet.Line
                     }
                     else
                     {
-                        //検索して写真を取得
-                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                        var photo = _context.AircraftPhoto.Where(p => p.RegistrationNumber == jaAddUpperedReg).SingleOrDefault();
+                        if (photo != null && DateTime.Now.Date == photo.LastAccess.Date)
+                        {
+                            //既存のURLから取得
+                            (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl($"https://www.jetphotos.com{photo.PhotoUrl}");
+                        }
+                        else
+                        {
+                            string jetphotoUrl = string.Format("https://www.jetphotos.com/showphotos.php?keywords-type=reg&keywords={0}&search-type=Advanced&keywords-contain=0&sort-order=2", jaAddUpperedReg);
+                            var parser = new HtmlParser();
+                            var htmlDocument = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync(jetphotoUrl));
+                            var photos = htmlDocument.GetElementsByClassName("result__photoLink");
+                            if (photos.Length != 0)
+                            {
+                                //Jetphotosに写真があった場合
+                                string newestPhotoLink = photos[0].GetAttribute("href");
+                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl($"https://www.jetphotos.com{newestPhotoLink}");
+                                _ = Task.Run(() =>
+                                {
+                                    //写真がないという情報を登録する
+                                    using (var serviceScope = _services.CreateScope())
+                                    {
+                                        using (var context = serviceScope.ServiceProvider.GetService<jafleetContext>())
+                                        {
+                                            if (photo != null)
+                                            {
+                                                photo.PhotoUrl = newestPhotoLink;
+                                                photo.LastAccess = DateTime.Now;
+                                                _context.AircraftPhoto.Update(photo);
+                                            }
+                                            else
+                                            {
+                                                context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now });
+                                            }
+                                            context.SaveChanges();
+                                        }
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                _ = Task.Run(() =>
+                                {
+                                    //写真がないという情報を登録する
+                                    using (var serviceScope = _services.CreateScope())
+                                    {
+                                        using (var context = serviceScope.ServiceProvider.GetService<jafleetContext>())
+                                        {
+                                            if (photo != null)
+                                            {
+                                                photo.PhotoUrl = null;
+                                                photo.LastAccess = DateTime.Now;
+                                                context.AircraftPhoto.Update(photo);
+                                            }
+                                            else
+                                            {
+                                                context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = null, LastAccess = DateTime.Now });
+                                            }
+                                            context.SaveChanges();
+                                        }
+                                    }
+                                });
+                            }
+                        }
                     }
                     if (!string.IsNullOrEmpty(photosmall))
                     {
