@@ -17,16 +17,12 @@ namespace jafleet.Line.Logics
             {
                 var parser = new HtmlParser();
                 var serchPage = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync(jetphotoUrl));
-                var photoLinkTag = serchPage.GetElementsByClassName("result__photoLink");
                 var photoSmallTag = serchPage.GetElementsByClassName("result__photo");
-                if (photoLinkTag.Length != 0)
+                if (photoSmallTag.Length != 0)
                 {
-                    if (photoSmallTag.Length != 0)
-                    {
-                        photoUrlSmall = "https:" + photoSmallTag[0].GetAttribute("src");
-                    }
-                    photoUrlLarge = photoUrlSmall.Replace("/400/","/full/");
+                    photoUrlSmall = "https:" + photoSmallTag[0].GetAttribute("src");
                 }
+                photoUrlLarge = photoUrlSmall.Replace("/400/","/full/");
             }
             catch (Exception)
             {
