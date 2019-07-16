@@ -145,6 +145,9 @@ namespace jafleet.Line
                 case EventMessageType.Text:
                     await HandleTextAsync(ev.ReplyToken, ((TextEventMessage)ev.Message).Text, ev.Source.UserId);
                     break;
+                default:
+                    LineUtil.PushMe($"{ev.Message.Type.ToString()}を受信", HttpClientManager.GetInstance());
+                    break;
             }
         }
 
