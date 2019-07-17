@@ -167,7 +167,7 @@ namespace jafleet.Line
         private async Task HandleImageAsync(string messageId)
         {
             var image = await messagingClient.GetContentBytesAsync(messageId);
-            var tempFileName = Path.GetTempFileName() + ".jpg";
+            var tempFileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}.jpg";
             File.WriteAllBytes(Path.Combine("wwwroot", tempFileName), image);
             LineUtil.PushMe($"https://line.ja-fleet.noobow.me/{tempFileName}", HttpClientManager.GetInstance());
         }
