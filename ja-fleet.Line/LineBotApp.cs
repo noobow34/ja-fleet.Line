@@ -7,9 +7,11 @@ using jafleet.Line.Manager;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using Microsoft.Extensions.DependencyInjection;
+using Noobow.Commons.Constants;
 using Noobow.Commons.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -146,10 +148,28 @@ namespace jafleet.Line
                 case EventMessageType.Text:
                     await HandleTextAsync(ev.ReplyToken, ((TextEventMessage)ev.Message).Text, ev.Source.UserId);
                     break;
+                case EventMessageType.Image:
+                    await HandleImageAsync(ev.Message.Id);
+                    break;
                 default:
                     LineUtil.PushMe($"{ev.Message.Type.ToString()}を受信", HttpClientManager.GetInstance());
                     break;
             }
+        }
+
+        /// <summary>
+        /// イメージメッセージ受信
+        /// </summary>
+        /// <param name="replyToken"></param>
+        /// <param name="userMessage"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private async Task HandleImageAsync(string messageId)
+        {
+            var image = await messagingClient.GetContentBytesAsync(messageId);
+            var tempFileName = Path.GetTempFileName() + ".jpg";
+            File.WriteAllBytes(Path.Combine("wwwroot", tempFileName), image);
+            LineUtil.PushMe($"https://line.ja-fleet.noobow.me/{tempFileName}", HttpClientManager.GetInstance());
         }
 
         /// <summary>
