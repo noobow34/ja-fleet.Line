@@ -149,7 +149,7 @@ namespace jafleet.Line
                     await HandleTextAsync(ev.ReplyToken, ((TextEventMessage)ev.Message).Text, ev.Source.UserId);
                     break;
                 case EventMessageType.Image:
-                    await HandleImageAsync(ev.Message.Id);
+                    await HandleImageAsync(ev.Message.Id, ev.Source.UserId);
                     break;
                 default:
                     LineUtil.PushMe($"{ev.Message.Type.ToString()}を受信", HttpClientManager.GetInstance());
@@ -164,12 +164,13 @@ namespace jafleet.Line
         /// <param name="userMessage"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        private async Task HandleImageAsync(string messageId)
+        private async Task HandleImageAsync(string messageId,string userId)
         {
             var image = await messagingClient.GetContentBytesAsync(messageId);
             var tempFileName = $"{DateTime.Now.ToString("yyyyMMddHHmmss")}.jpg";
             File.WriteAllBytes(Path.Combine("wwwroot/tmp", tempFileName), image);
-            LineUtil.PushMe($"https://line.ja-fleet.noobow.me/tmp/{tempFileName}", HttpClientManager.GetInstance());
+            var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+            LineUtil.PushMe($"{lineuser?.UserName}\nhttps://line.ja-fleet.noobow.me/tmp/{tempFileName}", HttpClientManager.GetInstance());
         }
 
         /// <summary>
