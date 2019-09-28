@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.IO;
@@ -29,7 +28,7 @@ namespace jafleet.Line.Middleware
             if (context.Request.Path.Value.Contains("/api/linebot"))
             {
                 //linebotへのリクエストのみ検証を行う
-                context.Request.EnableRewind();
+                context.Request.EnableBuffering();
                 StringValues lineSignatureHeader;
                 IHeaderDictionary headers = context.Request.Headers;
                 var xLineSignature = context.Request.Headers.TryGetValue("X-Line-Signature", out lineSignatureHeader);

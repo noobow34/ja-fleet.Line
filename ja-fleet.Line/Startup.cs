@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using System;
@@ -24,12 +25,7 @@ namespace jafleet.Line
 
         public void ConfigureServices(IServiceCollection services)
         {
-            IServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging(builder => builder
-            .AddConsole()
-            .AddFilter(level => level >= LogLevel.Information)
-            );
-            var loggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
 
             services.AddDbContextPool<jafleetContext>(
                 options => options.UseLoggerFactory(loggerFactory).UseMySql(Configuration.GetConnectionString("DefaultConnection"),
@@ -38,11 +34,11 @@ namespace jafleet.Line
                         mySqlOptions.ServerVersion(new Version(10, 3), ServerType.MariaDb);
                     }
             ));
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2); ;
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0); ;
             services.Configure<AppSettings>(Configuration);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -50,11 +46,10 @@ namespace jafleet.Line
             }
             app.UseLineValidationMiddleware(Configuration.GetSection("LineSettings")["ChannelSecret"]);
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoint =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}");
+                endpoint.MapControllerRoute("default","{controller=Home}/{action=Index}");
             });
         }        
     }
