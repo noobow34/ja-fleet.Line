@@ -34,7 +34,8 @@ namespace jafleet.Line
                         mySqlOptions.ServerVersion(new Version(10, 3), ServerType.MariaDb);
                     }
             ));
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0); ;
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvc().AddNewtonsoftJson();
             services.Configure<AppSettings>(Configuration);
         }
 

@@ -32,7 +32,7 @@ namespace jafleet.Line.Middleware
                 StringValues lineSignatureHeader;
                 IHeaderDictionary headers = context.Request.Headers;
                 var xLineSignature = context.Request.Headers.TryGetValue("X-Line-Signature", out lineSignatureHeader);
-                var content = new StreamReader(context.Request.Body).ReadToEnd();
+                var content = await new StreamReader(context.Request.Body).ReadToEndAsync();
                 if (string.IsNullOrEmpty(lineSignatureHeader.FirstOrDefault()) || !VerifySignature(channelSecret, lineSignatureHeader.First(), content))
                 {
                     throw new Exception("Signature validation faild.");
