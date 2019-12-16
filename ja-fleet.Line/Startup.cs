@@ -31,10 +31,11 @@ namespace jafleet.Line
                 options => options.UseLoggerFactory(loggerFactory).UseMySql(Configuration.GetConnectionString("DefaultConnection"),
                     mySqlOptions =>
                     {
-                        mySqlOptions.ServerVersion(new Version(10, 3), ServerType.MariaDb);
+                        mySqlOptions.ServerVersion(new Version(10, 4), ServerType.MariaDb);
                     }
             ));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvc().AddNewtonsoftJson();
             services.Configure<AppSettings>(Configuration);
         }
 
