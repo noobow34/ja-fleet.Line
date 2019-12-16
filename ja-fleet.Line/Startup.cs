@@ -35,7 +35,6 @@ namespace jafleet.Line
                     }
             ));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            services.AddMvc().AddNewtonsoftJson();
             services.Configure<AppSettings>(Configuration);
         }
 
