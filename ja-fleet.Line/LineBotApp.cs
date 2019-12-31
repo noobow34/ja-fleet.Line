@@ -167,6 +167,17 @@ namespace jafleet.Line
             string firstLine = userMessage.Split("\n")?[0];
             var replay = new List<ISendMessage>();
 
+            var compareTarget = DateTime.Now;
+            //お正月特別対応
+            if (compareTarget >= new DateTime(2020, 1, 1) && compareTarget < new DateTime(2020, 1, 4))
+            {
+                //1.1～1.3 かつ そのユーザーのログがない
+                if (_context.Log.Where(p => p.UserId == userId && p.LogDate >= new DateTime(2020, 1, 1)).Count() == 0)
+                {
+                    replay.Add(new TextMessage("あけましておめでとうございます。\n2020年もJA-Fleetをよろしくおねがいします。"));
+                }
+            }
+
             if (userMessage.Contains(CommandConstant.MESSAGE))
             {
                 await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage>() { ReplayMessage.SEND_MESSAGE });
