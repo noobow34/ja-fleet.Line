@@ -220,6 +220,7 @@ namespace jafleet.Line
                         $" 製造番号:{av.SerialNumber} \n " +
                         $" 登録年月日:{av.RegisterDate} \n " +
                         $" 運用状況:{av.Operation} \n " +
+                        $" コンフィグ:{av.SeatConfig}\n" +
                         $" WiFi:{av.Wifi} \n " +
                         $" 特別塗装:{av.SpecialLivery} \n " + 
                         $" 備考:{av.Remarks}";
