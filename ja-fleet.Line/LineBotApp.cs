@@ -226,6 +226,13 @@ namespace jafleet.Line
                         $" 備考:{av.Remarks}";
 
                     replay.Add(new TextMessage(aircraftInfo));
+
+                    //自分がアクセスした場合は必ずキャッシュを更新する
+                    if(userId == LineUserIdConstant.NOOBWO)
+                    {
+                        await HttpClientManager.GetInstance().GetStringAsync($"http://localhost:5000/Aircraft/Photo/{jaAddUpperedReg}?force=true");
+                    }
+
                     string photolarge = null;
                     string photosmall = null;
                     if (!string.IsNullOrEmpty(av.LinkUrl))
@@ -242,7 +249,15 @@ namespace jafleet.Line
                         if (photo != null && DateTime.Now.Date == photo.LastAccess.Date)
                         {
                             //既存のURLから取得
-                            (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl($"https://www.jetphotos.com{photo.PhotoUrl}");
+                            if (!string.IsNullOrEmpty(photo.PhotoDirectUrl))
+                            {
+                                photolarge = $"https://cdn.jetphotos.com/full{photo.PhotoDirectUrl}";
+                                photosmall = $"https://cdn.jetphotos.com/400{photo.PhotoDirectUrl}";
+                            }
+                            else
+                            {
+                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl($"https://www.jetphotos.com{photo.PhotoUrl}");
+                            }
                         }
                         else
                         {
