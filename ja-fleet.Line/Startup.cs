@@ -25,10 +25,8 @@ namespace jafleet.Line
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-
             services.AddDbContextPool<jafleetContext>(
-                options => options.UseLoggerFactory(loggerFactory).UseMySql(Configuration.GetConnectionString("DefaultConnection"),
+                options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection"),
                     mySqlOptions =>
                     {
                         mySqlOptions.ServerVersion(new Version(10, 4), ServerType.MariaDb);
