@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.15.0" />
-    <PackageReference Include="Line.Messaging" Version="1.4.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.5" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0" />
@@ -26,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ja-fleet.Commons\ja-fleet.Commons\ja-fleet.Commons.csproj" />
+    <ProjectReference Include="..\..\LineMessagingApi\Line.Messaging\Line.Messaging.csproj" />
     <ProjectReference Include="..\..\Noobow.Commons\Noobow.Commons\Noobow.Commons.csproj" />
   </ItemGroup>
 
