@@ -44,7 +44,7 @@ namespace jafleet.Line
             DateTime? followDate = DateTime.Now;
             string userId = ev.Source.UserId;
 
-            (var profile, var profileImage) = await GetUserProfileAsync(userId);
+            var profile = await GetUserProfileAsync(userId);
             Log log = new Log
             {
                 LogDate = followDate,
@@ -71,16 +71,6 @@ namespace jafleet.Line
                     ProfileUpdateTime = followDate
                 };
                 _context.LineUser.Add(user);
-                if (profileImage != null)
-                {
-                    var lpi = new LineUserProfileImage
-                    {
-                        UserId = userId,
-                        ProfileImage = profileImage,
-                        UpdateTIme = followDate
-                    };
-                    _context.LineUserProfileImage.Add(lpi);
-                }
             }
             _context.SaveChanges();
 
@@ -383,35 +373,16 @@ namespace jafleet.Line
                     if(lineuser.ProfileUpdateTime == null ||(DateTime.Now - lineuser.ProfileUpdateTime) > new TimeSpan(7, 0, 0, 0))
                     {
                         //前回アクセスから1週間以上
-                        (var profile, var profileImage) = await GetUserProfileAsync(userId);
+                        var profile = await GetUserProfileAsync(userId);
                         lineuser.UserName = profile.DisplayName;
                         lineuser.ProfileUpdateTime = processDate;
-                        if(profileImage != null)
-                        {
-                            var lpi = _context.LineUserProfileImage.Single(pi => pi.UserId == userId);
-                            if (lpi != null)
-                            {
-                                lpi.ProfileImage = profileImage;
-                                lpi.UpdateTIme = processDate;
-                            }
-                            else
-                            {
-                                lpi = new LineUserProfileImage
-                                {
-                                    UserId = userId,
-                                    ProfileImage = profileImage,
-                                    UpdateTIme = processDate
-                                };
-                                _context.LineUserProfileImage.Add(lpi);
-                            }
-                        }
                     }
                 }
                 else
                 {
                     //ユーザーのレコードがない
                     //ユーザー情報を取得
-                    (var profile, var profileImage) = await GetUserProfileAsync(userId);
+                    var profile = await GetUserProfileAsync(userId);
                     LineUser user = new LineUser
                     {
                         UserId = userId,
@@ -420,16 +391,6 @@ namespace jafleet.Line
                         ProfileUpdateTime = processDate
                     };
                     _context.LineUser.Add(user);
-                    if(profileImage != null)
-                    {
-                        LineUserProfileImage lpi = new LineUserProfileImage
-                        {
-                            UserId = userId,
-                            ProfileImage = profileImage,
-                            UpdateTIme = processDate
-                        };
-                        _context.LineUserProfileImage.Add(lpi);
-                    }
                 }
                 _context.SaveChanges();
             }
@@ -441,18 +402,13 @@ namespace jafleet.Line
         /// </summary>
         /// <param name="userId">ユーザーID</param>
         /// <returns></returns>
-        private async Task<(UserProfile, byte[])> GetUserProfileAsync(string userId)
+        private async Task<UserProfile> GetUserProfileAsync(string userId)
         {
             UserProfile retprofile;
-            byte[] retprofileimage = null;
 
             retprofile = await messagingClient.GetUserProfileAsync(userId);
-            if(retprofile?.PictureUrl != null)
-            {
-                retprofileimage = await HttpClientManager.GetInstance().GetByteArrayAsync(retprofile.PictureUrl);
-            }
 
-            return (retprofile, retprofileimage);
+            return retprofile;
         }
 
     }
