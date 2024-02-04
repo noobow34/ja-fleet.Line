@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using System;
 
 namespace jafleet.Line
@@ -26,8 +25,8 @@ namespace jafleet.Line
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContextPool<jafleetContext>(
-                options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), new MariaDbServerVersion(new Version(10, 4))
-            ));
+                options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"))
+            );
             services.AddMvc().AddNewtonsoftJson();
             services.Configure<AppSettings>(Configuration);
         }
