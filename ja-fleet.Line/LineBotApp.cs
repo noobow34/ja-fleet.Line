@@ -217,6 +217,7 @@ namespace jafleet.Line
 
                     replay.Add(new TextMessage(aircraftInfo));
 
+                    /*
                     //自分がアクセスした場合は必ずキャッシュを更新する
                     if(userId == LineUserIdConstant.NOOBWO)
                     {
@@ -346,9 +347,10 @@ namespace jafleet.Line
                     else
                     {
                         replay.Add(ReplayMessage.NOT_FOUND);
-                    }
+                    }*/
                 }
 
+                replay.Add(new TextMessage("現在写真を表示できないトラブルが発生しています。"));
                 await messagingClient.ReplyMessageAsync(replyToken, replay);
 
                 var processDate = DateTime.Now;
