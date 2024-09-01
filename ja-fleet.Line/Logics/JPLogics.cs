@@ -1,5 +1,9 @@
-﻿using AngleSharp.Html.Parser;
+﻿using AngleSharp;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
+using AngleSharp.XPath;
 using jafleet.Line.Manager;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 
@@ -9,20 +13,28 @@ namespace jafleet.Line.Logics
     {
         public static async Task<(string large, string small)> GetJetPhotosFromRegistrationNumberAsync(string regstrationNumber)
         {
-            string jetphotoUrl = $"https://www.jetphotos.com/showphotos.php?keywords-type=reg&keywords={regstrationNumber}&search-type=Advanced&keywords-contain=0&sort-order=2";
+            string photoUrl = $"https://www.airliners.net/search?keywords={regstrationNumber}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
             string photoUrlSmall = string.Empty;
             string photoUrlLarge = string.Empty;
 
             try
             {
-                var parser = new HtmlParser();
-                var serchPage = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync(jetphotoUrl));
-                var photoSmallTag = serchPage.GetElementsByClassName("result__photo");
-                if (photoSmallTag.Length != 0)
+                IBrowsingContext bContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader().WithXPath());
+                var htmlDocument = await bContext.OpenAsync(photoUrl);
+                var photos = htmlDocument.Body.SelectNodes(@"//*[@id='layout-page']/div[2]/section/section/section/div/section[2]/div/div[1]/div/div[1]/div[2]/div/a/img");
+                if (photos.Count != 0)
                 {
-                    photoUrlSmall = "https:" + photoSmallTag[0].GetAttribute("src");
+                    string photoNumber = photos[0].TextContent.Replace("\n", string.Empty).Replace(" ", string.Empty).Replace("#", string.Empty);
+                    string newestPhotoLink = $"https://www.airliners.net/photo/{photoNumber}";
+                    var htmlDocument2 = await bContext.OpenAsync(newestPhotoLink);
+                    var photos2 = htmlDocument2.Body.SelectNodes(@"//*[@id='layout-page']/div[5]/section/section/section/div/div/div[1]/div/a[1]/img");
+                    if (photos2.Count != 0)
+                    {
+                        Uri photoUri = new(((IHtmlImageElement)photos2[0]).Source);
+                        photoUrlLarge = photoUri.OriginalString.Replace(photoUri.Query, string.Empty);
+                        photoUrlSmall = photoUrlLarge;
+                    }
                 }
-                photoUrlLarge = photoUrlSmall.Replace("/400/","/full/");
             }
             catch (Exception)
             {
@@ -40,12 +52,14 @@ namespace jafleet.Line.Logics
 
             try
             {
-                var photoPage = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync(url));
-                var photoTag = photoPage.GetElementsByClassName("large-photo__img");
-                if (photoTag.Length != 0)
+                IBrowsingContext bContext2 = BrowsingContext.New(Configuration.Default.WithDefaultLoader().WithXPath());
+                var htmlDocument2 = await bContext2.OpenAsync(url);
+                var photos2 = htmlDocument2.Body.SelectNodes(@"//*[@id='layout-page']/div[5]/section/section/section/div/div/div[1]/div/a[1]/img");
+                if (photos2.Count != 0)
                 {
-                    photoUrlLarge = photoTag[0].GetAttribute("srcset");
-                    photoUrlSmall = photoUrlLarge.Replace("/full/", "/400/");
+                    Uri photoUri = new(((IHtmlImageElement)photos2[0]).Source);
+                    photoUrlLarge = photoUri.OriginalString.Replace(photoUri.Query, string.Empty);
+                    photoUrlSmall = photoUrlLarge;
                 }
             }
             catch (Exception)

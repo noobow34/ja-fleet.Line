@@ -1,4 +1,6 @@
+using AngleSharp;
 using AngleSharp.Html.Parser;
+using AngleSharp.XPath;
 using jafleet.Commons.Constants;
 using jafleet.Commons.EF;
 using jafleet.Line.Constants;
@@ -217,7 +219,6 @@ namespace jafleet.Line
 
                     replay.Add(new TextMessage(aircraftInfo));
 
-                    /*
                     //自分がアクセスした場合は必ずキャッシュを更新する
                     if(userId == LineUserIdConstant.NOOBWO)
                     {
@@ -228,7 +229,7 @@ namespace jafleet.Line
                     string photosmall = null;
                     if (!string.IsNullOrEmpty(av.LinkUrl))
                     {
-                        if (av.LinkUrl.Contains("jetphotos"))
+                        if (av.LinkUrl.Contains("airliners"))
                         {
                             //LinkUrlがJetphotosなら写真を取得
                             (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(av.LinkUrl);
@@ -242,25 +243,26 @@ namespace jafleet.Line
                             //既存のURLから取得
                             if (!string.IsNullOrEmpty(photo.PhotoDirectUrl))
                             {
-                                photolarge = $"https://cdn.jetphotos.com/full{photo.PhotoDirectUrl}";
-                                photosmall = $"https://cdn.jetphotos.com/400{photo.PhotoDirectUrl}";
+                                photolarge = photo.PhotoDirectUrl;
+                                photosmall = photo.PhotoDirectUrl;
                             }
                             else
                             {
-                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl($"https://www.jetphotos.com{photo.PhotoUrl}");
+                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(photo.PhotoUrl);
                             }
                         }
                         else
                         {
-                            string jetphotoUrl = string.Format("https://www.jetphotos.com/showphotos.php?keywords-type=reg&keywords={0}&search-type=Advanced&keywords-contain=0&sort-order=2", jaAddUpperedReg);
-                            var parser = new HtmlParser();
-                            var htmlDocument = parser.ParseDocument(await HttpClientManager.GetInstance().GetStringAsync(jetphotoUrl));
-                            var photos = htmlDocument.GetElementsByClassName("result__photoLink");
-                            if (photos.Length != 0)
+                            string photoUrl = $"https://www.airliners.net/search?keywords={jaAddUpperedReg}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
+                            IBrowsingContext bContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader().WithXPath());
+                            var htmlDocument = await bContext.OpenAsync(photoUrl);
+                            var photos = htmlDocument.Body.SelectNodes(@"//*[@id='layout-page']/div[2]/section/section/section/div/section[2]/div/div[1]/div/div[1]/div[1]/div[1]/a");
+                            if (photos.Count != 0)
                             {
-                                //Jetphotosに写真があった場合
-                                string newestPhotoLink = photos[0].GetAttribute("href");
-                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl($"https://www.jetphotos.com{newestPhotoLink}");
+                                //写真があった場合
+                                string photoNumber = photos[0].TextContent.Replace("\n", string.Empty).Replace(" ", string.Empty).Replace("#", string.Empty);
+                                string newestPhotoLink = $"https://www.airliners.net/photo/{photoNumber}";
+                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(newestPhotoLink);
                                 _ = Task.Run(() =>
                                 {
                                     //写真がないという情報を登録する
@@ -313,7 +315,6 @@ namespace jafleet.Line
                     {
                         replay.Add(new ImageMessage(photolarge, photosmall));
                     }
-
                 }
                 else
                 {
@@ -347,10 +348,9 @@ namespace jafleet.Line
                     else
                     {
                         replay.Add(ReplayMessage.NOT_FOUND);
-                    }*/
+                    }
                 }
 
-                replay.Add(new TextMessage("現在写真を表示できないトラブルが発生しています。"));
                 await messagingClient.ReplyMessageAsync(replyToken, replay);
 
                 var processDate = DateTime.Now;
