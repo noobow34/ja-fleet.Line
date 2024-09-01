@@ -268,11 +268,12 @@ namespace jafleet.Line
                                     {
                                         photo.PhotoUrl = newestPhotoLink;
                                         photo.LastAccess = DateTime.Now;
+                                        photo.PhotoDirectUrl = photolarge;
                                         _context.AircraftPhoto.Update(photo);
                                     }
                                     else
                                     {
-                                        context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now });
+                                        context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now, PhotoDirectUrl = photolarge });
                                     }
                                     context.SaveChanges();
                                 });
