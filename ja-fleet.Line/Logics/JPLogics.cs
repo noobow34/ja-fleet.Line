@@ -13,7 +13,7 @@ namespace jafleet.Line.Logics
     {
         public static async Task<(string large, string small)> GetJetPhotosFromRegistrationNumberAsync(string regstrationNumber)
         {
-            string photoUrl = $"https://www.airliners.net/search?keywords={regstrationNumber}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
+            string photoUrl = $"https://www.airliners.net/search?registrationActual={regstrationNumber}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
             string photoUrlSmall = string.Empty;
             string photoUrlLarge = string.Empty;
 

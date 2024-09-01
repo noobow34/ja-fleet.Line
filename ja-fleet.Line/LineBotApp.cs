@@ -249,7 +249,7 @@ namespace jafleet.Line
                         }
                         else
                         {
-                            string photoUrl = $"https://www.airliners.net/search?keywords={jaAddUpperedReg}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
+                            string photoUrl = $"https://www.airliners.net/search?registrationActual={jaAddUpperedReg}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
                             IBrowsingContext bContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader().WithXPath());
                             var htmlDocument = await bContext.OpenAsync(photoUrl);
                             var photos = htmlDocument.Body.SelectNodes(@"//*[@id='layout-page']/div[2]/section/section/section/div/section[2]/div/div[1]/div/div[1]/div[1]/div[1]/a");
