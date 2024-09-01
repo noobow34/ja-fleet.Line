@@ -216,10 +216,10 @@ namespace jafleet.Line
                     replay.Add(new TextMessage(aircraftInfo));
 
                     //自分がアクセスした場合は必ずキャッシュを更新する
-                    if(userId == LineUserIdConstant.NOOBWO)
+                    /*if(userId == LineUserIdConstant.NOOBWO)
                     {
                         await HttpClientManager.GetInstance().GetStringAsync($"http://localhost:5000/Aircraft/Photo/{jaAddUpperedReg}?force=true");
-                    }
+                    }*/
 
                     string photolarge = null;
                     string photosmall = null;
