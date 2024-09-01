@@ -92,38 +92,34 @@ namespace jafleet.Line
                 string userId = ev.Source.UserId;
 
                 //LINE_USERにユーザーを記録
-                using (var serviceScope = _services.CreateScope())
+                using var serviceScope = _services.CreateScope();
+                using var context = serviceScope.ServiceProvider.GetService<jafleetContext>();
+                var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                if (lineuser != null)
                 {
-                    using (var context = serviceScope.ServiceProvider.GetService<jafleetContext>())
-                    {
-                        var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
-                        if (lineuser != null)
-                        {
-                            //ユーザーがLINE_USERテーブルに存在する場合
-                            lineuser.UnfollowDate = unfollowDate;
-                        }
-                        else
-                        {
-                            //ユーザーがLINE_USERテーブルに存在しない場合（初期のユーザーなど）
-                            var unfollowedUser = new LineUser
-                            {
-                                UserId = userId,
-                                UnfollowDate = unfollowDate
-                            };
-                        }
-
-                        Log log = new Log
-                        {
-                            LogDate = unfollowDate,
-                            LogType = LogType.LINE_UNFOLLOW,
-                            LogDetail = (lineuser?.UserName) ?? userId,
-                            UserId = userId
-                        };
-
-                        _context.Log.Add(log);
-                        _context.SaveChanges();
-                    }
+                    //ユーザーがLINE_USERテーブルに存在する場合
+                    lineuser.UnfollowDate = unfollowDate;
                 }
+                else
+                {
+                    //ユーザーがLINE_USERテーブルに存在しない場合（初期のユーザーなど）
+                    var unfollowedUser = new LineUser
+                    {
+                        UserId = userId,
+                        UnfollowDate = unfollowDate
+                    };
+                }
+
+                Log log = new Log
+                {
+                    LogDate = unfollowDate,
+                    LogType = LogType.LINE_UNFOLLOW,
+                    LogDetail = (lineuser?.UserName) ?? userId,
+                    UserId = userId
+                };
+
+                _context.Log.Add(log);
+                _context.SaveChanges();
             });
 
         }
@@ -266,23 +262,19 @@ namespace jafleet.Line
                                 _ = Task.Run(() =>
                                 {
                                     //写真がないという情報を登録する
-                                    using (var serviceScope = _services.CreateScope())
+                                    using var serviceScope = _services.CreateScope();
+                                    using var context = serviceScope.ServiceProvider.GetService<jafleetContext>();
+                                    if (photo != null)
                                     {
-                                        using (var context = serviceScope.ServiceProvider.GetService<jafleetContext>())
-                                        {
-                                            if (photo != null)
-                                            {
-                                                photo.PhotoUrl = newestPhotoLink;
-                                                photo.LastAccess = DateTime.Now;
-                                                _context.AircraftPhoto.Update(photo);
-                                            }
-                                            else
-                                            {
-                                                context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now });
-                                            }
-                                            context.SaveChanges();
-                                        }
+                                        photo.PhotoUrl = newestPhotoLink;
+                                        photo.LastAccess = DateTime.Now;
+                                        _context.AircraftPhoto.Update(photo);
                                     }
+                                    else
+                                    {
+                                        context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now });
+                                    }
+                                    context.SaveChanges();
                                 });
                             }
                             else
@@ -290,23 +282,19 @@ namespace jafleet.Line
                                 _ = Task.Run(() =>
                                 {
                                     //写真がないという情報を登録する
-                                    using (var serviceScope = _services.CreateScope())
+                                    using var serviceScope = _services.CreateScope();
+                                    using var context = serviceScope.ServiceProvider.GetService<jafleetContext>();
+                                    if (photo != null)
                                     {
-                                        using (var context = serviceScope.ServiceProvider.GetService<jafleetContext>())
-                                        {
-                                            if (photo != null)
-                                            {
-                                                photo.PhotoUrl = null;
-                                                photo.LastAccess = DateTime.Now;
-                                                context.AircraftPhoto.Update(photo);
-                                            }
-                                            else
-                                            {
-                                                context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = null, LastAccess = DateTime.Now });
-                                            }
-                                            context.SaveChanges();
-                                        }
+                                        photo.PhotoUrl = null;
+                                        photo.LastAccess = DateTime.Now;
+                                        context.AircraftPhoto.Update(photo);
                                     }
+                                    else
+                                    {
+                                        context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = null, LastAccess = DateTime.Now });
+                                    }
+                                    context.SaveChanges();
                                 });
                             }
                         }

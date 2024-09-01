@@ -60,12 +60,10 @@ namespace jafleet.Line.Middleware
                 var key = Encoding.UTF8.GetBytes(channelSecret);
                 var body = Encoding.UTF8.GetBytes(requestBody);
 
-                using (HMACSHA256 hmac = new HMACSHA256(key))
-                {
-                    var hash = hmac.ComputeHash(body, 0, body.Length);
-                    var xLineBytes = Convert.FromBase64String(xLineSignature);
-                    return SlowEquals(xLineBytes, hash);
-                }
+                using HMACSHA256 hmac = new HMACSHA256(key);
+                var hash = hmac.ComputeHash(body, 0, body.Length);
+                var xLineBytes = Convert.FromBase64String(xLineSignature);
+                return SlowEquals(xLineBytes, hash);
             }
             catch
             {
