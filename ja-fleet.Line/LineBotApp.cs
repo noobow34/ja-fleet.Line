@@ -209,7 +209,14 @@ namespace jafleet.Line
                     //自分がアクセスした場合は必ずキャッシュを更新する
                     if(userId == LineUserIdConstant.NOOBWO)
                     {
-                        await HttpClientManager.GetInstance().GetStringAsync($"http://localhost:5000/Aircraft/Photo/{jaAddUpperedReg}?force=true");
+                        try
+                        {
+                            _ = await HttpClientManager.GetInstance().GetAsync($"http://localhost:5000/Aircraft/Photo/{jaAddUpperedReg}?force=true");
+                        }
+                        catch
+                        {
+
+                        }
                     }
 
                     string photolarge = null;
