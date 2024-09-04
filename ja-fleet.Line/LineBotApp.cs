@@ -156,15 +156,6 @@ namespace jafleet.Line
             var replay = new List<ISendMessage>();
 
             var compareTarget = DateTime.Now;
-            //お正月特別対応
-            if (compareTarget >= new DateTime(2021, 1, 1) && compareTarget < new DateTime(2021, 1, 4))
-            {
-                //1.1～1.3 かつ そのユーザーのログがない
-                if (_context.Log.Where(p => p.UserId == userId && p.LogDate >= new DateTime(2021, 1, 1)).Count() == 0)
-                {
-                    replay.Add(new TextMessage("あけましておめでとうございます。\n2021年もJA-Fleetをよろしくおねがいします。"));
-                }
-            }
 
             if (userMessage.Contains(CommandConstant.MESSAGE))
             {
@@ -216,10 +207,10 @@ namespace jafleet.Line
                     replay.Add(new TextMessage(aircraftInfo));
 
                     //自分がアクセスした場合は必ずキャッシュを更新する
-                    /*if(userId == LineUserIdConstant.NOOBWO)
+                    if(userId == LineUserIdConstant.NOOBWO)
                     {
                         await HttpClientManager.GetInstance().GetStringAsync($"http://localhost:5000/Aircraft/Photo/{jaAddUpperedReg}?force=true");
-                    }*/
+                    }
 
                     string photolarge = null;
                     string photosmall = null;
