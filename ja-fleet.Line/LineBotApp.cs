@@ -1,6 +1,7 @@
 using AngleSharp;
 using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
+using EnumStringValues;
 using jafleet.Commons.Constants;
 using jafleet.Commons.EF;
 using jafleet.Line.Constants;
@@ -170,9 +171,9 @@ namespace jafleet.Line
                 };
                 _context.Messages.Add(m);
                 _context.SaveChanges();
-                LineUtil.PushMe("【JA-Fleet from LINE】\n" +
+                await SlackUtil.PostAsync(SlackChannelEnum.jafleet.GetStringValue(), "【JA-Fleet from LINE】\n" +
                                     "ユーザー：" + (_context.LineUser.Find(userId)?.UserName ?? userId) + "\n" +
-                                    userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty), HttpClientManager.GetInstance());
+                                    userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty));
             }
             else if (userMessage.Contains(CommandConstant.HOWTOSEARCH))
             {
