@@ -1,10 +1,8 @@
 using Line.Messaging.Webhooks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 using jafleet.Line.Manager;
 using jafleet.Commons.EF;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace jafleet.Line.Controllers
 {

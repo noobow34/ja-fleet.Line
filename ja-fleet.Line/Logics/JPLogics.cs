@@ -2,10 +2,6 @@
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
-using jafleet.Line.Manager;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 
 namespace jafleet.Line.Logics
 {

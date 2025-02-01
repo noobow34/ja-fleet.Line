@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-
 namespace jafleet.Line.Middleware
 {
     public static class MiddlewareExtensions

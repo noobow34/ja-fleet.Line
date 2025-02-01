@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace jafleet.Line.Constants
+﻿namespace jafleet.Line.Constants
 {
     public static class CommandConstant
     {

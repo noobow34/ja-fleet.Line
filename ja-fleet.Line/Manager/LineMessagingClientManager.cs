@@ -1,12 +1,4 @@
-﻿using jafleet.Line.Models;
-using Line.Messaging;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Line.Messaging;
 
 namespace jafleet.Line.Manager
 {

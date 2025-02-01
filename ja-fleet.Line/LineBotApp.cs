@@ -1,22 +1,14 @@
 using AngleSharp;
-using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
 using EnumStringValues;
 using jafleet.Commons.Constants;
 using jafleet.Commons.EF;
 using jafleet.Line.Constants;
 using jafleet.Line.Logics;
-using jafleet.Line.Manager;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
-using Microsoft.Extensions.DependencyInjection;
 using Noobow.Commons.Constants;
 using Noobow.Commons.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace jafleet.Line
 {
