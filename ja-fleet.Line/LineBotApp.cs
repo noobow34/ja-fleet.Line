@@ -15,10 +15,10 @@ namespace jafleet.Line
     internal class LineBotApp : WebhookApplication
     {
         private LineMessagingClient messagingClient { get; }
-        private readonly jafleetContext _context;
+        private readonly JafleetContext _context;
         private readonly IServiceScopeFactory _services;
 
-        public LineBotApp(LineMessagingClient lineMessagingClient,jafleetContext context, IServiceScopeFactory serviceScopeFactory)
+        public LineBotApp(LineMessagingClient lineMessagingClient,JafleetContext context, IServiceScopeFactory serviceScopeFactory)
         {
             this.messagingClient = lineMessagingClient;
             _context = context;
@@ -47,9 +47,9 @@ namespace jafleet.Line
                 LogDetail = profile?.DisplayName,
                 UserId = userId
             };
-            _context.Log.Add(log);
+            _context.Logs.Add(log);
             //LINE_USERにユーザーを記録
-            var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+            var lineuser = _context.LineUsers.SingleOrDefault(p => p.UserId == userId);
             if(lineuser != null)
             {
                 //すでに存在するユーザーの場合（再フォローの場合など）
@@ -65,7 +65,7 @@ namespace jafleet.Line
                     FollowDate = followDate,
                     ProfileUpdateTime = followDate
                 };
-                _context.LineUser.Add(user);
+                _context.LineUsers.Add(user);
             }
             _context.SaveChanges();
 
@@ -86,8 +86,8 @@ namespace jafleet.Line
 
                 //LINE_USERにユーザーを記録
                 using var serviceScope = _services.CreateScope();
-                using var context = serviceScope.ServiceProvider.GetService<jafleetContext>();
-                var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                using var context = serviceScope.ServiceProvider.GetService<JafleetContext>();
+                var lineuser = _context.LineUsers.SingleOrDefault(p => p.UserId == userId);
                 if (lineuser != null)
                 {
                     //ユーザーがLINE_USERテーブルに存在する場合
@@ -111,7 +111,7 @@ namespace jafleet.Line
                     UserId = userId
                 };
 
-                _context.Log.Add(log);
+                _context.Logs.Add(log);
                 _context.SaveChanges();
             });
 
@@ -161,10 +161,10 @@ namespace jafleet.Line
                     MessageType = Commons.Constants.MessageType.LINE,
                     RecieveDate = DateTime.Now
                 };
-                _context.Messages.Add(m);
+                _context.Messagess.Add(m);
                 _context.SaveChanges();
                 await SlackUtil.PostAsync(SlackChannelEnum.jafleet.GetStringValue(), "【JA-Fleet from LINE】\n" +
-                                    "ユーザー：" + (_context.LineUser.Find(userId)?.UserName ?? userId) + "\n" +
+                                    "ユーザー：" + (_context.LineUsers.Find(userId)?.UserName ?? userId) + "\n" +
                                     userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty));
             }
             else if (userMessage.Contains(CommandConstant.HOWTOSEARCH))
@@ -181,7 +181,7 @@ namespace jafleet.Line
 
                 AircraftView? av = null;
 
-                av = _context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
+                av = _context.AircraftViews.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
 
                 if (av != null)
                 {
@@ -211,7 +211,7 @@ namespace jafleet.Line
                     }
                     else
                     {
-                        var photo = _context.AircraftPhoto.Where(p => p.RegistrationNumber == jaAddUpperedReg).SingleOrDefault();
+                        var photo = _context.AircraftPhotos.Where(p => p.RegistrationNumber == jaAddUpperedReg).SingleOrDefault();
                         if (photo != null && DateTime.Now.Date == photo.LastAccess.Date)
                         {
                             //既存のURLから取得
@@ -241,17 +241,17 @@ namespace jafleet.Line
                                 {
                                     //写真がないという情報を登録する
                                     using var serviceScope = _services.CreateScope();
-                                    using var context = serviceScope.ServiceProvider.GetService<jafleetContext>();
+                                    using var context = serviceScope.ServiceProvider.GetService<JafleetContext>();
                                     if (photo != null)
                                     {
                                         photo.PhotoUrl = newestPhotoLink;
                                         photo.LastAccess = DateTime.Now;
                                         photo.PhotoDirectUrl = photolarge;
-                                        _context.AircraftPhoto.Update(photo);
+                                        _context.AircraftPhotos.Update(photo);
                                     }
                                     else
                                     {
-                                        context!.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now, PhotoDirectUrl = photolarge });
+                                        context!.AircraftPhotos.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now, PhotoDirectUrl = photolarge });
                                     }
                                     context!.SaveChanges();
                                 });
@@ -262,16 +262,16 @@ namespace jafleet.Line
                                 {
                                     //写真がないという情報を登録する
                                     using var serviceScope = _services.CreateScope();
-                                    using var context = serviceScope.ServiceProvider.GetService<jafleetContext>();
+                                    using var context = serviceScope.ServiceProvider.GetService<JafleetContext>();
                                     if (photo != null)
                                     {
                                         photo.PhotoUrl = null;
                                         photo.LastAccess = DateTime.Now;
-                                        context?.AircraftPhoto.Update(photo);
+                                        context?.AircraftPhotos.Update(photo);
                                     }
                                     else
                                     {
-                                        context!.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = null, LastAccess = DateTime.Now });
+                                        context!.AircraftPhotos.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = null, LastAccess = DateTime.Now });
                                     }
                                     context!.SaveChanges();
                                 });
@@ -331,10 +331,10 @@ namespace jafleet.Line
                 };
 
                 //Log登録
-                _context.Log.Add(log);
+                _context.Logs.Add(log);
 
                 //LineUser登録または更新
-                var lineuser = _context.LineUser.SingleOrDefault(p => p.UserId == userId);
+                var lineuser = _context.LineUsers.SingleOrDefault(p => p.UserId == userId);
                 if (lineuser != null)
                 {
                     //ユーザーのレコードがある
@@ -359,7 +359,7 @@ namespace jafleet.Line
                         LastAccess = processDate,
                         ProfileUpdateTime = processDate
                     };
-                    _context.LineUser.Add(user);
+                    _context.LineUsers.Add(user);
                 }
                 _context.SaveChanges();
             }

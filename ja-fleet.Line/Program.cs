@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 var config = new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json").Build();
 
-builder.Services.AddDbContextPool<jafleetContext>(
+builder.Services.AddDbContextPool<JafleetContext>(
     options => options.UseNpgsql(config.GetConnectionString("DefaultConnection"))
 );
 builder.Services.AddMvc().AddNewtonsoftJson();

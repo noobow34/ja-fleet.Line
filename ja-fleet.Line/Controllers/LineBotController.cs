@@ -10,9 +10,9 @@ namespace jafleet.Line.Controllers
     [Route("api/[controller]")]
     public class LineBotController : Controller
     {
-        private readonly jafleetContext _context;
+        private readonly JafleetContext _context;
         private readonly IServiceScopeFactory _services;
-        public LineBotController(jafleetContext context, IServiceScopeFactory serviceScopeFactory)
+        public LineBotController(JafleetContext context, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _services = serviceScopeFactory;
