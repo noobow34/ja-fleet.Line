@@ -40,7 +40,7 @@ namespace jafleet.Line
             string userId = ev.Source.UserId;
 
             var profile = await GetUserProfileAsync(userId);
-            Log log = new Log
+            Log log = new()
             {
                 LogDate = followDate,
                 LogType = LogType.LINE_FOLLOW,
@@ -58,7 +58,7 @@ namespace jafleet.Line
             else
             {
                 //新規ユーザー（普通こっち）
-                LineUser user = new LineUser
+                LineUser user = new()
                 {
                     UserId = userId,
                     UserName = profile?.DisplayName,
@@ -103,7 +103,7 @@ namespace jafleet.Line
                     };
                 }
 
-                Log log = new Log
+                Log log = new()
                 {
                     LogDate = unfollowDate,
                     LogType = LogType.LINE_UNFOLLOW,
@@ -152,7 +152,7 @@ namespace jafleet.Line
 
             if (userMessage.Contains(CommandConstant.MESSAGE))
             {
-                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage>() { ReplayMessage.SEND_MESSAGE });
+                await messagingClient.ReplyMessageAsync(replyToken, [ReplayMessage.SEND_MESSAGE]);
                 string messageBody = userMessage.Replace(CommandConstant.MESSAGE + "\n", string.Empty);
                 var m = new Message
                 {
@@ -169,7 +169,7 @@ namespace jafleet.Line
             }
             else if (userMessage.Contains(CommandConstant.HOWTOSEARCH))
             {
-                await messagingClient.ReplyMessageAsync(replyToken, new List<ISendMessage>() { ReplayMessage.HOWTO_SEARCH });
+                await messagingClient.ReplyMessageAsync(replyToken, [ReplayMessage.HOWTO_SEARCH]);
             }
             else
             {
@@ -322,7 +322,7 @@ namespace jafleet.Line
 
                 var processDate = DateTime.Now;
                 //ユーザーに返信してからログを処理
-                Log log = new Log
+                Log log = new()
                 {
                     LogDate = processDate,
                     LogType = LogType.LINE,
@@ -352,7 +352,7 @@ namespace jafleet.Line
                     //ユーザーのレコードがない
                     //ユーザー情報を取得
                     var profile = await GetUserProfileAsync(userId);
-                    LineUser user = new LineUser
+                    LineUser user = new()
                     {
                         UserId = userId,
                         UserName = profile.DisplayName,
