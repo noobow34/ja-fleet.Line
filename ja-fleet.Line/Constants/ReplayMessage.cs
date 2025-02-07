@@ -24,7 +24,7 @@ namespace jafleet.Line.Constants
 
         public static readonly TextMessage SEND_MESSAGE = new("メッセージを受信しました。\n" +
                                                                             "ありがとうございましたm(_ _)m\n" +
-                                                                            "なお、仕組み上LINEの返信はできないため、\n" +
+                                                                            "なお、仕組み上LINEでの返信はできないため、\n" +
                                                                             "返信が必要な場合はメールアドレスやTwitterのアカウントなどを記載ください。");
 
         public static readonly TextMessage NOT_FOUND = new("見つかりませんでした。\n" +
