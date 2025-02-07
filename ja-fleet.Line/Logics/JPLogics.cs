@@ -26,7 +26,7 @@ namespace jafleet.Line.Logics
                     var photos2 = htmlDocument2.Body.SelectNodes(@"//*[@id='layout-page']/div[5]/section/section/section/div/div/div[1]/div/a[1]/img");
                     if (photos2.Count != 0)
                     {
-                        Uri photoUri = new(((IHtmlImageElement)photos2[0]).Source);
+                        Uri photoUri = new(((IHtmlImageElement)photos2[0]).Source!);
                         photoUrlLarge = photoUri.OriginalString.Replace(photoUri.Query, string.Empty);
                         photoUrlSmall = photoUrlLarge;
                     }
@@ -53,7 +53,7 @@ namespace jafleet.Line.Logics
                 var photos2 = htmlDocument2.Body.SelectNodes(@"//*[@id='layout-page']/div[5]/section/section/section/div/div/div[1]/div/a[1]/img");
                 if (photos2.Count != 0)
                 {
-                    Uri photoUri = new(((IHtmlImageElement)photos2[0]).Source);
+                    Uri photoUri = new(((IHtmlImageElement)photos2[0]).Source!);
                     photoUrlLarge = photoUri.OriginalString.Replace(photoUri.Query, string.Empty);
                     photoUrlSmall = photoUrlLarge;
                 }

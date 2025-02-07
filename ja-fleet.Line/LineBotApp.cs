@@ -143,9 +143,9 @@ namespace jafleet.Line
         /// <returns></returns>
         private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
         {
-            string upperedReg = userMessage.Split("\n")?[0].ToUpper();
-            string jaAddUpperedReg = upperedReg;
-            string firstLine = userMessage.Split("\n")?[0];
+            string? upperedReg = userMessage.Split("\n")?[0].ToUpper();
+            string? jaAddUpperedReg = upperedReg;
+            string? firstLine = userMessage.Split("\n")?[0];
             var replay = new List<ISendMessage>();
 
             var compareTarget = DateTime.Now;
@@ -174,12 +174,12 @@ namespace jafleet.Line
             else
             {
                 //通常の利用（レジ）
-                if (!upperedReg.StartsWith("JA"))
+                if (!(upperedReg!.StartsWith("JA")))
                 {
                     jaAddUpperedReg = "JA" + upperedReg;
                 }
 
-                AircraftView av = null;
+                AircraftView? av = null;
 
                 av = _context.AircraftView.Where(p => p.RegistrationNumber == jaAddUpperedReg).FirstOrDefault();
 
@@ -199,8 +199,8 @@ namespace jafleet.Line
 
                     replay.Add(new TextMessage(aircraftInfo));
 
-                    string photolarge = null;
-                    string photosmall = null;
+                    string? photolarge = null;
+                    string? photosmall = null;
                     if (!string.IsNullOrEmpty(av.LinkUrl))
                     {
                         if (av.LinkUrl.Contains("airliners"))
@@ -222,7 +222,7 @@ namespace jafleet.Line
                             }
                             else
                             {
-                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(photo.PhotoUrl);
+                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(photo.PhotoUrl!);
                             }
                         }
                         else
@@ -251,9 +251,9 @@ namespace jafleet.Line
                                     }
                                     else
                                     {
-                                        context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now, PhotoDirectUrl = photolarge });
+                                        context!.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now, PhotoDirectUrl = photolarge });
                                     }
-                                    context.SaveChanges();
+                                    context!.SaveChanges();
                                 });
                             }
                             else
@@ -267,13 +267,13 @@ namespace jafleet.Line
                                     {
                                         photo.PhotoUrl = null;
                                         photo.LastAccess = DateTime.Now;
-                                        context.AircraftPhoto.Update(photo);
+                                        context?.AircraftPhoto.Update(photo);
                                     }
                                     else
                                     {
-                                        context.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg, PhotoUrl = null, LastAccess = DateTime.Now });
+                                        context!.AircraftPhoto.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = null, LastAccess = DateTime.Now });
                                     }
-                                    context.SaveChanges();
+                                    context!.SaveChanges();
                                 });
                             }
                         }
@@ -300,7 +300,7 @@ namespace jafleet.Line
                     else
                     {
                         //見つからなければJA付きで検索
-                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg);
+                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg!);
                         if (!string.IsNullOrEmpty(photosmall))
                         {
                             //JA付きの検索で見つかった

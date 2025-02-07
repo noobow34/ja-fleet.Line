@@ -15,7 +15,7 @@ builder.WebHost.UseUrls("http://localhost:6500");
 
 var app = builder.Build();
 
-app.UseLineValidationMiddleware(config.GetSection("LineSettings")["ChannelSecret"]);
+app.UseLineValidationMiddleware(config.GetSection("LineSettings")["ChannelSecret"]!);
 app.UseStaticFiles();
 app.UseRouting();
 app.MapControllerRoute(

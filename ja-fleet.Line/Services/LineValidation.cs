@@ -20,7 +20,7 @@ namespace jafleet.Line.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path.Value.Contains("/api/linebot"))
+            if (context.Request.Path.Value!.Contains("/api/linebot"))
             {
                 //linebotへのリクエストのみ検証を行う
                 context.Request.EnableBuffering();
@@ -28,7 +28,7 @@ namespace jafleet.Line.Middleware
                 IHeaderDictionary headers = context.Request.Headers;
                 var xLineSignature = context.Request.Headers.TryGetValue("X-Line-Signature", out lineSignatureHeader);
                 var content = await new StreamReader(context.Request.Body).ReadToEndAsync();
-                if (string.IsNullOrEmpty(lineSignatureHeader.FirstOrDefault()) || !VerifySignature(channelSecret, lineSignatureHeader.First(), content))
+                if (string.IsNullOrEmpty(lineSignatureHeader.FirstOrDefault()) || !VerifySignature(channelSecret, lineSignatureHeader.First()!, content))
                 {
                     throw new Exception("Signature validation faild.");
                 }
