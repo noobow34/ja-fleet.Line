@@ -127,7 +127,7 @@ namespace jafleet.Line
             switch (ev.Message.Type)
             {
                 case EventMessageType.Text:
-                    await HandleTextAsync(ev.ReplyToken, ((TextEventMessage)ev.Message).Text, ev.Source.UserId);
+                    await HandleTextAsync(ev.ReplyToken, ((TextEventMessage)ev.Message).Text, ev.Source.UserId, ((TextEventMessage)ev.Message).IsCheck);
                     break;
                 default:
                     break;
@@ -141,7 +141,7 @@ namespace jafleet.Line
         /// <param name="userMessage"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        private async Task HandleTextAsync(string replyToken, string userMessage, string userId)
+        private async Task HandleTextAsync(string replyToken, string userMessage, string userId, bool isCheck)
         {
             string? upperedReg = userMessage.Split("\n")?[0].ToUpper();
             string? jaAddUpperedReg = upperedReg;
@@ -316,6 +316,11 @@ namespace jafleet.Line
                     {
                         replay.Add(ReplayMessage.NOT_FOUND);
                     }
+                }
+
+                if (isCheck)
+                {
+                    return;
                 }
 
                 await messagingClient.ReplyMessageAsync(replyToken, replay);
