@@ -2,6 +2,7 @@
 using jafleet.Line.Manager;
 using Line.Messaging.Webhooks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace jafleet.Line.Controllers
 {
@@ -19,26 +20,35 @@ namespace jafleet.Line.Controllers
         [HttpPost]
         public async Task<IActionResult> IndexAsync()
         {
-            string body = @"
-{
+            int count = _context.Aircrafts.Count();
+            int randomIndex = new Random().Next(count);
+
+            Aircraft a = _context.Aircrafts
+                .Skip(randomIndex)
+                .Take(1)
+                .First();
+
+            string body = $@"
+{{
   ""events"": [
-    {
+    {{
       ""replyToken"": ""dummyToken"",
       ""type"": ""message"",
       ""timestamp"": 1462629479859,
       ""isCheck"": ""true"",
-      ""source"": {
+      ""source"": {{
         ""type"": ""user"",
         ""userId"": """"
-      },
-      ""message"": {
+      }},
+      ""message"": {{
         ""id"": ""325708"",
         ""type"": ""text"",
-        ""text"": ""JA381A""
-      }
-    }
+        ""text"": ""{a.RegistrationNumber}""
+      }}
+    }}
   ]
-}";
+}}";
+
             var events = WebhookEventParser.Parse(body);
 
             var app = new LineBotApp(LineMessagingClientManager.GetInstance(), _context, _services);
