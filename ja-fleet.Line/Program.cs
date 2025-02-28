@@ -2,12 +2,17 @@ using jafleet.Commons.EF;
 using jafleet.Line.Middleware;
 using jafleet.Line.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json").Build();
 
 builder.Services.AddDbContextPool<JafleetContext>(
-    options => options.UseNpgsql(config.GetConnectionString("DefaultConnection"))
+    options => options.UseNpgsql(config.GetConnectionString("DefaultConnection")).ConfigureWarnings(warnings =>
+    {
+        warnings.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning);
+        warnings.Ignore(CoreEventId.FirstWithoutOrderByAndFilterWarning);
+    })
 );
 builder.Services.AddMvc().AddNewtonsoftJson();
 builder.Services.Configure<AppSettings>(config);
