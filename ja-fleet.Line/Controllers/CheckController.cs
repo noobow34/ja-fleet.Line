@@ -23,7 +23,7 @@ namespace jafleet.Line.Controllers
             int count = _context.Aircrafts.Count();
             int randomIndex = new Random().Next(count);
 
-            Aircraft a = _context.Aircrafts
+            Aircraft a = _context.Aircrafts.AsNoTracking()
                 .Skip(randomIndex)
                 .Take(1)
                 .First();
