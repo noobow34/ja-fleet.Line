@@ -3,6 +3,8 @@ using jafleet.Line.Manager;
 using Line.Messaging.Webhooks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Noobow.Commons.Extensions;
+using System.Diagnostics;
 
 namespace jafleet.Line.Controllers
 {
@@ -22,6 +24,8 @@ namespace jafleet.Line.Controllers
         {
             int count = _context.Aircrafts.Count();
             int randomIndex = new Random().Next(count);
+            Stopwatch sw = new();
+            sw.Start();
 
             Aircraft a = _context.Aircrafts.AsNoTracking()
                 .Skip(randomIndex)
@@ -53,6 +57,9 @@ namespace jafleet.Line.Controllers
 
             var app = new LineBotApp(LineMessagingClientManager.GetInstance(), _context, _services);
             await app.RunAsync(events);
+
+            sw.Stop();
+            this.JournalWriteLine($"Check:{a.RegistrationNumber!}:{sw.Elapsed}");
 
             return new OkResult();
         }
