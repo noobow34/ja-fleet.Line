@@ -1,6 +1,7 @@
 using AngleSharp;
 using AngleSharp.XPath;
 using EnumStringValues;
+using jafleet.Commons.Aircraft;
 using jafleet.Commons.Constants;
 using jafleet.Commons.EF;
 using jafleet.Line.Constants;
@@ -198,119 +199,19 @@ namespace jafleet.Line
                         $" 備考:{av.Remarks}";
 
                     replay.Add(new TextMessage(aircraftInfo));
-
-                    string? photolarge = null;
-                    string? photosmall = null;
-                    if (!string.IsNullOrEmpty(av.LinkUrl))
-                    {
-                        if (av.LinkUrl.Contains("airliners"))
-                        {
-                            //LinkUrlがJetphotosなら写真を取得
-                            (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(av.LinkUrl);
-                        }
-                    }
-                    else
-                    {
-                        var photo = _context.AircraftPhotos.Where(p => p.RegistrationNumber == jaAddUpperedReg).SingleOrDefault();
-                        if (photo != null && DateTime.Now.Date == photo.LastAccess.Date)
-                        {
-                            //既存のURLから取得
-                            if (!string.IsNullOrEmpty(photo.PhotoDirectUrl))
-                            {
-                                photolarge = photo.PhotoDirectUrl;
-                                photosmall = photo.PhotoDirectUrl;
-                            }
-                            else
-                            {
-                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(photo.PhotoUrl!);
-                            }
-                        }
-                        else
-                        {
-                            string photoUrl = $"https://www.airliners.net/search?registrationActual={jaAddUpperedReg}&sortBy=datePhotographedYear&sortOrder=desc&perPage=1";
-                            IBrowsingContext bContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader().WithXPath());
-                            var htmlDocument = await bContext.OpenAsync(photoUrl);
-                            var photos = htmlDocument.Body.SelectNodes(@"//*[@id='layout-page']/div[2]/section/section/section/div/section[2]/div/div[1]/div/div[1]/div[1]/div[1]/a");
-                            if (photos.Count != 0)
-                            {
-                                //写真があった場合
-                                string photoNumber = photos[0].TextContent.Replace("\n", string.Empty).Replace(" ", string.Empty).Replace("#", string.Empty);
-                                string newestPhotoLink = $"https://www.airliners.net/photo/{photoNumber}";
-                                (photolarge, photosmall) = await JPLogics.GetJetPhotosFromJetphotosUrl(newestPhotoLink);
-                                _ = Task.Run(() =>
-                                {
-                                    //写真がないという情報を登録する
-                                    using var serviceScope = _services.CreateScope();
-                                    using var context = serviceScope.ServiceProvider.GetService<JafleetContext>();
-                                    if (photo != null)
-                                    {
-                                        photo.PhotoUrl = newestPhotoLink;
-                                        photo.LastAccess = DateTime.Now;
-                                        photo.PhotoDirectUrl = photolarge;
-                                        _context.AircraftPhotos.Update(photo);
-                                    }
-                                    else
-                                    {
-                                        context!.AircraftPhotos.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = newestPhotoLink, LastAccess = DateTime.Now, PhotoDirectUrl = photolarge });
-                                    }
-                                    context!.SaveChanges();
-                                });
-                            }
-                            else
-                            {
-                                _ = Task.Run(() =>
-                                {
-                                    //写真がないという情報を登録する
-                                    using var serviceScope = _services.CreateScope();
-                                    using var context = serviceScope.ServiceProvider.GetService<JafleetContext>();
-                                    if (photo != null)
-                                    {
-                                        photo.PhotoUrl = null;
-                                        photo.LastAccess = DateTime.Now;
-                                        context?.AircraftPhotos.Update(photo);
-                                    }
-                                    else
-                                    {
-                                        context!.AircraftPhotos.Add(new AircraftPhoto { RegistrationNumber = jaAddUpperedReg!, PhotoUrl = null, LastAccess = DateTime.Now });
-                                    }
-                                    context!.SaveChanges();
-                                });
-                            }
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(photosmall))
-                    {
-                        replay.Add(new ImageMessage(photolarge, photosmall));
-                    }
                 }
-                else
+
+                var ap = await AircraftDataExtractor.GetAircraftPhotoAnyRegistrationNumberAsync(jaAddUpperedReg!, _context);
+                if (ap != null && !string.IsNullOrEmpty(ap.PhotoDirectLarge))
                 {
-                    //JA-Fleetのデータベースで見つからなかった場合、写真のみ検索
-
-                    //まずはそのまま検索
-                    string photolarge;
-                    string photosmall;
-                    bool found = false;
-                    (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(upperedReg);
-                    if (!string.IsNullOrEmpty(photosmall))
+                    replay.Add(new ImageMessage(ap.PhotoDirectLarge, ap.PhotoDirectSmall));
+                }
+                else if (av ==null)
+                {
+                    var ap2 = await AircraftDataExtractor.GetAircraftPhotoAnyRegistrationNumberAsync(upperedReg!, _context);
+                    if (ap2 != null)
                     {
-                        //そのまま検索で見つかった
-                        found = true;
-                    }
-                    else
-                    {
-                        //見つからなければJA付きで検索
-                        (photolarge, photosmall) = await JPLogics.GetJetPhotosFromRegistrationNumberAsync(jaAddUpperedReg!);
-                        if (!string.IsNullOrEmpty(photosmall))
-                        {
-                            //JA付きの検索で見つかった
-                            found = true;
-                        }
-                    }
-
-                    if (found)
-                    {
-                        replay.Add(new ImageMessage(photolarge, photosmall));
+                        replay.Add(new ImageMessage(ap2.PhotoDirectLarge, ap2.PhotoDirectSmall));
                     }
                     else
                     {
@@ -318,6 +219,7 @@ namespace jafleet.Line
                     }
                 }
 
+                //チェック処理の場合は返信しない
                 if (isCheck)
                 {
                     return;
@@ -368,7 +270,6 @@ namespace jafleet.Line
                 }
                 _context.SaveChanges();
             }
-
         }
 
         /// <summary>
