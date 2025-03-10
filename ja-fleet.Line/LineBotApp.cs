@@ -1,11 +1,8 @@
-using AngleSharp;
-using AngleSharp.XPath;
 using EnumStringValues;
 using jafleet.Commons.Aircraft;
 using jafleet.Commons.Constants;
 using jafleet.Commons.EF;
 using jafleet.Line.Constants;
-using jafleet.Line.Logics;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
 using Noobow.Commons.Constants;
@@ -201,10 +198,9 @@ namespace jafleet.Line
                     replay.Add(new TextMessage(aircraftInfo));
                 }
 
-                var ap = await AircraftDataExtractor.GetAircraftPhotoAnyRegistrationNumberAsync(jaAddUpperedReg!, _context);
-                if (ap != null && !string.IsNullOrEmpty(ap.PhotoDirectLarge))
+                if (!string.IsNullOrEmpty(av?.PhotoDirectLarge))
                 {
-                    replay.Add(new ImageMessage(ap.PhotoDirectLarge, ap.PhotoDirectSmall));
+                    replay.Add(new ImageMessage(av.PhotoDirectLarge, av.PhotoDirectSmall));
                 }
                 else if (av ==null)
                 {
