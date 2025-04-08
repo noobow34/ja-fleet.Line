@@ -10,8 +10,7 @@ namespace jafleet.Line.Manager
         {
             if(_client == null)
             {
-                var config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
-                string channelAccessToken = config.GetSection("LineSettings")["ChannelAccessToken"]!;
+                string channelAccessToken = Environment.GetEnvironmentVariable("LINE_CHANNEL_ACCESS_TOKEN") ?? "";
 #if DEBUG
                 _client = new LineMessagingClient(channelAccessToken,"http://localhost:8080");
 #else
